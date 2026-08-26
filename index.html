@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>greenfir · 个人门户</title>
+<style>
+:root{
+  --bg:#0d1117; --card:#161b22; --border:#30363d;
+  --text:#c9d1d9; --muted:#8b949e; --accent:#58a6ff; --ok:#3fb950; --warn:#d29922;
+}
+*{box-sizing:border-box}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  max-width:960px;margin:0 auto;padding:18px;background:var(--bg);color:var(--text);
+}
+h1{color:var(--accent);margin:6px 0;font-size:24px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.badge{font-size:12px;color:var(--muted);border:1px solid var(--border);padding:4px 10px;border-radius:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:16px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px}
+.card h2{font-size:16px;margin:0 0 10px;color:var(--accent)}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0}
+input,button,select{font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:#0d1117;color:var(--text)}
+button{background:var(--accent);color:#0d1117;border:none;font-weight:600;cursor:pointer}
+button:hover{filter:brightness(1.1)}
+.muted{color:var(--muted);font-size:13px}
+.big{font-size:28px;font-weight:700}
+.weather-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.weather-item{background:#0d1117;padding:8px;border-radius:8px;border:1px solid var(--border)}
+.weather-item .label{font-size:11px;color:var(--muted)}
+.weather-item .val{font-size:18px;color:var(--ok);font-weight:600}
+.quote-text{font-size:15px;line-height:1.6;padding:10px;background:#0d1117;border-radius:8px;border-left:3px solid var(--accent);margin-top:8px}
+.quote-source{font-size:12px;color:var(--muted);margin-top:4px}
+.todo li{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px dashed var(--border)}
+.todo li:last-child{border:none}
+.todo button{background:transparent;color:var(--muted);font-size:16px}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div>
+    <h1>🏠 greenfir 主站</h1>
+    <div class="muted" id="date"></div>
+  </div>
+  <div class="row">
+    <span class="badge" id="clock">--:--:--</span>
+    <span class="badge" id="ip">IP 获取中…</span>
+  </div>
+</div>
+
+<div class="grid">
+
+  <div class="card">
+    <h2>🌤️ 天气</h2>
+    <div class="row">
+      <input id="city" placeholder="城市名，如 北京 / beijing" value="北京" style="flex:1">
+      <button onclick="getWeather()">查询</button>
+    </div>
+    <div id="weather"><div class="muted">点击查询获取天气</div></div>
+  </div>
+
+  <div class="card">
+    <h2>💬 每日一句</h2>
+    <div class="quote-text" id="quote">加载中…</div>
+    <div class="quote-source" id="quoteSource"></div>
+    <button onclick="fetchQuote()" style="margin-top:8px">换一句</button>
+  </div>
+
+  <div class="card">
+    <h2>🧮 计算器</h2>
+    <input id="calcExpr" placeholder="如 (12+8)*3" style="width:100%">
+    <div class="row" style="margin-top:8px">
+      <button onclick="calc()">计算</button>
+      <span id="calcRes" class="muted"></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>⏳ 目标倒计时</h2>
+    <input id="targetDate" type="date">
+    <button onclick="setCountdown()" style="margin-top:6px">开始倒计时</button>
+    <div id="countdown" class="big" style="margin-top:8px">--</div>
+  </div>
+
+  <div class="card">
+    <h2>🎲 随机 / 单位换算</h2>
+    <div class="row">
+      <button onclick="rnd()">随机 1-100</button>
+      <span id="rndOut" class="muted"></span>
+    </div>
+    <div class="row" style="margin-top:6px">
+      <select id="convFrom"><option value="cm">厘米</option><option value="m">米</option><option value="kg">千克</option></select>
+      <span class="muted">→</span>
+      <select id="convTo"><option value="m">米</option><option value="cm">厘米</option><option value="g">克</option></select>
+      <input id="convVal" placeholder="数值" style="width:70px">
+      <button onclick="conv()">换算</button>
+    </div>
+    <div id="convOut" class="muted"></div>
+  </div>
+
+  <div class="card">
+    <h2>✅ 待办清单</h2>
+    <div class="row">
+      <input id="todoIn" placeholder="添加一项…" style="flex:1">
+      <button onclick="addTodo()">添加</button>
+    </div>
+    <ul class="todo" id="todoList"></ul>
+  </div>
+
+  <div class="card">
+    <h2>🍅 番茄钟</h2>
+    <div class="big" id="pomo">25:00</div>
+    <div class="row">
+      <button onclick="startPomo()">开始</button>
+      <button onclick="resetPomo()">重置</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🎨 颜色拾取</h2>
+    <input id="color" type="color" value="#58a6ff" style="height:42px">
+    <span id="colorHex" class="muted">#58a6ff</span>
+  </div>
+
+  <div class="card">
+    <h2>🔐 编码工具</h2>
+    <input id="b64In" placeholder="输入文本" style="width:100%">
+    <div class="row" style="margin-top:6px">
+      <button onclick="b64('encode')">Base64 编码</button>
+      <button onclick="b64('decode')">解码</button>
+    </div>
+    <div id="b64Out" class="muted" style="word-break:break-all"></div>
+  </div>
+
+  <div class="card">
+    <h2>📚 学期进度</h2>
+    <div class="muted">示例学期：2026-09-01 至 2027-01-20</div>
+    <div id="term" class="big"></div>
+  </div>
+
+</div>
+
+<script>
+// 时钟
+function tick(){document.getElementById('clock').textContent=new Date().toLocaleTimeString('zh-CN',{hour12:false});}
+setInterval(tick,1000);tick();
+document.getElementById('date').textContent=new Date().toLocaleDateString('zh-CN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+// IP
+fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d=>document.getElementById('ip').textContent='IP '+d.ip).catch(()=>document.getElementById('ip').textContent='IP 获取失败');
+
+// 天气（open-meteo，免 Key，稳定 JSON，支持中文城市）
+function getWeather(){
+  const c=document.getElementById('city').value||'北京';
+  document.getElementById('weather').innerHTML='<div class="muted">查询中…</div>';
+  fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(c)+'&count=1&language=zh')
+  .then(r=>r.json())
+  .then(d=>{
+    if(!d.results||d.results.length===0){document.getElementById('weather').innerHTML='<div class="muted">找不到该城市</div>';return;}
+    const lat=d.results[0].latitude,lon=d.results[0].longitude;
+    const cityName=d.results[0].name,country=d.results[0].country;
+    return fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=auto');
+  })
+  .then(r=>r.json())
+  .then(d=>{
+    if(!d||!d.current) return;
+    const cur=d.current;
+    const codeMap={
+      0:'☀️ 晴朗',1:'🌤️ 大部晴朗',2:'⛅ 局部多云',3:'☁️ 阴天',
+      45:'🌫️ 雾',48:'🌫️ 沉积雾凇',
+      51:'🌧️ 小毛毛雨',53:'🌧️ 毛毛雨',55:'🌧️ 浓毛毛雨',
+      61:'🌧️ 小雨',63:'🌧️ 中雨',65:'🌧️ 大雨',
+      71:'❄️ 小雪',73:'❄️ 中雪',75:'❄️ 大雪',95:'⛈️ 雷暴'
+    };
+    const desc=codeMap[cur.weather_code]||'🌡️ 未知';
+    document.getElementById('weather').innerHTML=`
+      <div style="font-size:18px;color:var(--accent);margin-top:6px">${cityName||''}${country?', '+country:''}</div>
+      <div style="font-size:14px;color:var(--muted)">${desc}</div>
+      <div class="weather-grid">
+        <div class="weather-item"><div class="label">温度</div><div class="val">${cur.temperature_2m}°${d.current_units.temperature_2m||''}</div></div>
+        <div class="weather-item"><div class="label">体感</div><div class="val">${cur.apparent_temperature}°</div></div>
+        <div class="weather-item"><div class="label">湿度</div><div class="val">${cur.relative_humidity_2m}%</div></div>
+        <div class="weather-item"><div class="label">风速</div><div class="val">${cur.wind_speed_10m} km/h</div></div>
+      </div>`;
+  })
+  .catch(()=>document.getElementById('weather').innerHTML='<div class="muted">获取失败</div>');
+}
+getWeather();
+
+// 每日一句（hitokoto）
+function fetchQuote(){
+  document.getElementById('quote').textContent='加载中…';
+  document.getElementById('quoteSource').textContent='';
+  fetch('https://v1.hitokoto.cn/?encode=json').then(r=>r.json()).then(d=>{
+    document.getElementById('quote').textContent=d.hitokoto;
+    document.getElementById('quoteSource').textContent=d.from?'—— '+d.from:'';
+  }).catch(()=>document.getElementById('quote').textContent='加载失败，点一下换一句吧');
+}
+fetchQuote();
+
+// 计算器
+function calc(){try{const v=document.getElementById('calcExpr').value;document.getElementById('calcRes').textContent='= '+Function('"use strict";return ('+v+')')();}catch(e){document.getElementById('calcRes').textContent='表达式有误';}}
+
+// 倒计时
+let cdInt;function setCountdown(){clearInterval(cdInt);const t=new Date(document.getElementById('targetDate').value||Date.now()+86400000);cdInt=setInterval(()=>{const s=Math.max(0,Math.floor((t-new Date())/1000));document.getElementById('countdown').textContent=Math.floor(s/86400)+'天 '+Math.floor(s%86400/3600)+'时';},1000);}
+
+// 随机
+function rnd(){document.getElementById('rndOut').textContent=Math.floor(Math.random()*100)+1;}
+
+// 换算
+function conv(){const f=document.getElementById('convFrom').value,t=document.getElementById('convTo').value,v=parseFloat(document.getElementById('convVal').value)||0,o=v;if(f==='cm'&&t==='m')o=v/100;if(f==='m'&&t==='cm')o=v*100;if(f==='kg'&&t==='g')o=v*1000;document.getElementById('convOut').textContent=o;}
+
+// 待办
+const todoKey='gf_todo';function renderTodo(){const a=JSON.parse(localStorage.getItem(todoKey)||'[]');document.getElementById('todoList').innerHTML=a.map((x,i)=>`<li><span>${x}</span><button onclick="delTodo(${i})">✕</button></li>`).join('');}
+function addTodo(){const v=document.getElementById('todoIn').value.trim();if(!v)return;const a=JSON.parse(localStorage.getItem(todoKey)||'[]');a.push(v);localStorage.setItem(todoKey,JSON.stringify(a));document.getElementById('todoIn').value='';renderTodo();}
+function delTodo(i){const a=JSON.parse(localStorage.getItem(todoKey)||'[]');a.splice(i,1);localStorage.setItem(todoKey,JSON.stringify(a));renderTodo();}
+renderTodo();
+
+// 番茄钟
+let pt;function startPomo(){let s=1500;clearInterval(pt);pt=setInterval(()=>{s--;if(s<0){clearInterval(pt);return;}document.getElementById('pomo').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');},1000);}
+function resetPomo(){clearInterval(pt);document.getElementById('pomo').textContent='25:00';}
+
+// 颜色
+document.getElementById('color').addEventListener('input',e=>document.getElementById('colorHex').textContent=e.target.value);
+
+// Base64
+function b64(m){const v=document.getElementById('b64In').value;try{document.getElementById('b64Out').textContent=m==='encode'?btoa(unescape(encodeURIComponent(v))):decodeURIComponent(escape(atob(v)));}catch(e){document.getElementById('b64Out').textContent='解码失败';}}
+
+// 学期进度
+(function(){const start=new Date('2026-09-01'),end=new Date('2027-01-20');function up(){const total=end-start,elapsed=Math.min(total,new Date()-start);document.getElementById('term').textContent=total<=0?'--':Math.round(elapsed/total*100)+'%';}up();setInterval(up,600000);})();
+</script>
+</body>
+</html>
