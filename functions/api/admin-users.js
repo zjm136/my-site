@@ -10,6 +10,6 @@ export async function onRequestGet({request,env}){
   const me=await env.USER_DB.get('u:'+u); if(!me) return json({ok:false},401);
   if(!JSON.parse(me).isAdmin) return json({ok:false,msg:'非管理员'},403);
   const out=[]; let cursor;
-  do{const page=await env.USER_DB.list({prefix:'u:',cursor});for(const k of page.keys){const v=await env.USER_DB.get(k.name);const d=v?JSON.parse(v):{};out.push({username:k.name.slice(2),isAdmin:!!d.isAdmin,created:d.created||null,usedBytes:+(await env.USER_DB.get('quota:'+k.name.slice(2)))||0,fileCount:0});}cursor=page.cursor;}while(cursor);
+  do{const page=await env.USER_DB.list({prefix:'u:',cursor});for(const k of page.keys){const v=await env.USER_DB.get(k.name);const d=v?JSON.parse(v):{};out.push({username:k.name.slice(2),isAdmin:!!d.isAdmin,created:d.created||null,usedBytes:+(await env.USER_DB.get('quota:'+k.name.slice(2)))||0});}cursor=page.cursor;}while(cursor);
   return json({ok:true,users:out});
 }
