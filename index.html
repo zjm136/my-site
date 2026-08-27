@@ -9,14 +9,13 @@
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
 header{background:#111827;border-bottom:1px solid #1f2937;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
 header h1{font-size:18px;font-weight:700;color:#38bdf8}
-header .right{display:flex;gap:8px;align-items:center;font-size:14px}
 header button{font:inherit;font-size:13px;padding:6px 12px;border-radius:8px;border:1px solid #334155;background:#1e293b;color:#e2e8f0;cursor:pointer}
 header button:hover{background:#334155}
 main{padding:20px;max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
 .card{background:#111827;border:1px solid #1f2937;border-radius:12px;padding:16px}
-.card h2{font-size:15px;margin-bottom:12px;color:#38bdf8;display:flex;align-items:center;gap:6px}
-input,.tab-btn{font:inherit;font-size:14px}
-input[type=text],input[type=password],input[type=file]{width:100%;padding:8px 10px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#e2e8f0;margin-bottom:8px}
+.card h2{font-size:15px;margin-bottom:12px;color:#38bdf8}
+input{font:inherit;font-size:14px}
+input[type=text],input[type=password]{width:100%;padding:8px 10px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#e2e8f0;margin-bottom:8px}
 button.primary{font:inherit;font-size:14px;padding:8px 14px;border-radius:8px;border:none;background:#38bdf8;color:#0b1220;font-weight:600;cursor:pointer;width:100%}
 button.primary:hover{background:#7dd3fc}
 .tabs{display:flex;gap:4px;margin-bottom:12px}
@@ -64,10 +63,7 @@ button.primary:hover{background:#7dd3fc}
 
 <header class="hidden" id="main-header">
   <h1>🌲 greenfir 控制台</h1>
-  <div class="right">
-    <span id="who"></span>
-    <button onclick="logout()">退出</button>
-  </div>
+  <button onclick="logout()">退出</button>
 </header>
 
 <main id="main" class="hidden">
@@ -126,11 +122,6 @@ button.primary:hover{background:#7dd3fc}
     <p style="font-size:12px;color:#64748b">暂未开放（存储后端调整中）</p>
   </div>
 
-  <div class="card">
-    <h2>🛠️ 管理</h2>
-    <button class="primary" onclick="location.href='/admin.html'">进入管理后台</button>
-  </div>
-
 </main>
 
 <script>
@@ -180,7 +171,6 @@ function enterMain(){
   document.getElementById('gate').classList.add('hidden');
   document.getElementById('main-header').classList.remove('hidden');
   document.getElementById('main').classList.remove('hidden');
-  document.getElementById('who').textContent='@'+username;
   loadTodos();
 }
 
@@ -264,4 +254,3 @@ function toolPomo(){
 </script>
 </body>
 </html>
-
