@@ -11,8 +11,12 @@ export async function onRequestPost({request,env}){
   if(!JSON.parse(me).isAdmin) return json({ok:false,msg:'非管理员'},403);
   const {username}=await request.json().catch(()=>null); if(!username) return json({ok:false,msg:'缺少username'},400);
   if(username===u) return json({ok:false,msg:'不能删除自己'},400);
-  await env.USER_DB.delete('u:'+username);
-  await env.USER_DB.delete('s:'+username);
-  await env.USER_DB.delete('quota:'+username);
-  return json({ok:true,msg:'已删除用户 '+username});
+  if(username==='admin') return json({ok:false,msg:'不能删除admin'},400);
+  if(await env.USER_DB.get('u:'+username)!==null){await env.USER_DB.delete('u:'+username);}
+  if(await env.USER_DB.get('s:'+username)!==null){await env.USER_DB.delete('s:'+username);}
+  if(await env.USER_DB.get('quota:'+username)!==null){await env.USER_DB.delete('quota:'+username);}
+  let cursor;
+  do{const page=await env.USER_DB.list({prefix:username+':',cursor});for(const k of page.keys){await env.USER_DB.delete(k.name);}cursor=page.cursor;}while(cursor);
+  const stillExists=await env.USER_DB.get('u:'+username);
+  return json({ok:true,msg:stillExists?'删除可能未生效，请重试':'已彻底删除用户 '+username,deleted:!stillExists});
 }
