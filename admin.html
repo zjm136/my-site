@@ -3,94 +3,253 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>greenfir · 管理后台</title>
+<title>greenfir 控制台</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
-header{background:#111827;border-bottom:1px solid #1f2937;padding:12px 20px;display:flex;justify-content:space-between;align-items:center}
-header h1{font-size:18px;color:#38bdf8}
-main{padding:20px;max-width:1000px;margin:0 auto}
-.card{background:#111827;border:1px solid #1f2937;border-radius:12px;padding:16px;margin-bottom:16px}
-.card h2{font-size:15px;color:#38bdf8;margin-bottom:12px}
-input{font:inherit;font-size:14px;width:100%;padding:8px 10px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#e2e8f0;margin-bottom:8px}
-button{font:inherit;font-size:14px;padding:8px 14px;border-radius:8px;border:none;background:#38bdf8;color:#0b1220;font-weight:600;cursor:pointer}
-button:hover{background:#7dd3fc}
-button.danger{background:transparent;color:#ef4444;border:1px solid #ef4444}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th,td{text-align:left;padding:8px;border-bottom:1px solid #1f2937}
-th{color:#94a3b8;font-weight:500}
-.muted{color:#94a3b8;font-size:13px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
+header{background:#111827;border-bottom:1px solid #1f2937;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+header h1{font-size:18px;font-weight:700;color:#38bdf8}
+header button{font:inherit;font-size:13px;padding:6px 12px;border-radius:8px;border:1px solid #334155;background:#1e293b;color:#e2e8f0;cursor:pointer}
+header button:hover{background:#334155}
+main{padding:20px;max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+.card{background:#111827;border:1px solid #1f2937;border-radius:12px;padding:16px}
+.card h2{font-size:15px;margin-bottom:12px;color:#38bdf8}
+input{font:inherit;font-size:14px}
+input[type=text],input[type=password]{width:100%;padding:8px 10px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#e2e8f0;margin-bottom:8px}
+button.primary{font:inherit;font-size:14px;padding:8px 14px;border-radius:8px;border:none;background:#38bdf8;color:#0b1220;font-weight:600;cursor:pointer;width:100%}
+button.primary:hover{background:#7dd3fc}
+.tabs{display:flex;gap:4px;margin-bottom:12px}
+.tab-btn{flex:1;padding:6px;border-radius:6px;border:1px solid #334155;background:transparent;color:#94a3b8;cursor:pointer}
+.tab-btn.active{background:#38bdf8;color:#0b1220;border-color:#38bdf8}
 .msg{font-size:13px;margin-top:6px;padding:6px 8px;border-radius:6px}
 .msg.ok{background:#052e16;color:#4ade80}
 .msg.err{background:#450a0a;color:#f87171}
-#app{display:none}
+.tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.tool-btn{font:inherit;font-size:12px;padding:6px 8px;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#cbd5e1;cursor:pointer;text-align:left}
+.tool-btn:hover{background:#1e293b}
+.nav-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.nav-btn{font:inherit;font-size:12px;padding:8px;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#cbd5e1;cursor:pointer;text-decoration:none;text-align:center;display:block}
+.nav-btn:hover{background:#1e293b}
+.todo-item{display:flex;gap:6px;align-items:center;padding:4px 0;font-size:14px}
+.todo-item input[type=checkbox]{accent-color:#38bdf8}
+.todo-item.done span{text-decoration:line-through;color:#64748b}
+#gate{position:fixed;inset:0;background:#0f172a;display:flex;align-items:center;justify-content:center;z-index:100}
+#gate .card{width:100%;max-width:360px}
+.hidden{display:none!important}
 </style>
 </head>
 <body>
 
-<div id="gate" class="card" style="max-width:360px;margin:60px auto">
-  <h2>🔐 管理员验证</h2>
-  <input id="u" placeholder="管理员账号">
-  <input id="p" type="password" placeholder="密码">
-  <button onclick="adminLogin()">进入后台</button>
-  <div id="msg"></div>
+<div id="gate">
+  <div class="card">
+    <h2>🔐 登录 / 注册</h2>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('login')">登录</button>
+      <button class="tab-btn" onclick="switchTab('reg')">注册</button>
+    </div>
+    <div id="login-panel">
+      <input id="login-user" placeholder="账号名">
+      <input id="login-pass" type="password" placeholder="密码">
+      <button class="primary" onclick="doLogin()">登录</button>
+    </div>
+    <div id="reg-panel" class="hidden">
+      <input id="reg-user" placeholder="账号名（3-20位字母数字）">
+      <input id="reg-pass" type="password" placeholder="密码（至少6位）">
+      <button class="primary" onclick="doRegister()">注册</button>
+    </div>
+    <div id="gate-msg"></div>
+  </div>
 </div>
 
-<div id="app">
-  <header>
-    <h1>🛠️ greenfir 管理后台</h1>
-    <div><span id="who" class="muted"></span> <button onclick="logout()">退出</button></div>
-  </header>
-  <main>
-    <div class="card">
-      <h2>👥 注册用户</h2>
-      <table><thead><tr><th>账号</th><th>创建时间</th><th>操作</th></tr></thead><tbody id="users"></tbody></table>
+<header class="hidden" id="main-header">
+  <h1>🌲 greenfir 控制台</h1>
+  <button onclick="logout()">退出</button>
+</header>
+
+<main id="main" class="hidden">
+
+  <div class="card">
+    <h2>🧰 快捷工具</h2>
+    <div class="tool-grid">
+      <button class="tool-btn" onclick="toolWeather()">🌤️ 天气</button>
+      <button class="tool-btn" onclick="toolQuote()">💬 每日一句</button>
+      <button class="tool-btn" onclick="toolMC()">🧱 MC种子</button>
+      <button class="tool-btn" onclick="toolPass()">🔑 密码生成</button>
+      <button class="tool-btn" onclick="toolBase64()">📦 Base64</button>
+      <button class="tool-btn" onclick="toolColor()">🎨 颜色拾取</button>
+      <button class="tool-btn" onclick="toolCalc()">🧮 计算器</button>
+      <button class="tool-btn" onclick="toolPomo()">⏱️ 番茄钟</button>
     </div>
-    <div class="card">
-      <h2>📊 全站用量</h2>
-      <div id="usage" class="muted">加载中…</div>
+    <div id="tool-output" style="margin-top:10px;font-size:13px;color:#cbd5e1;min-height:20px"></div>
+  </div>
+
+  <div class="card">
+    <h2>📋 待办</h2>
+    <div style="display:flex;gap:6px;margin-bottom:8px">
+      <input id="todo-input" placeholder="新待办" style="margin-bottom:0">
+      <button class="primary" style="width:auto;padding:8px 12px" onclick="addTodo()">添加</button>
     </div>
-  </main>
-</div>
+    <div id="todo-list"></div>
+  </div>
+
+  <div class="card">
+    <h2>🔗 导航</h2>
+    <p style="font-size:12px;color:#94a3b8;margin-bottom:8px">常用</p>
+    <div class="nav-grid">
+      <a class="nav-btn" href="https://chat.openai.com" target="_blank">ChatGPT</a>
+      <a class="nav-btn" href="https://claude.ai" target="_blank">Claude</a>
+      <a class="nav-btn" href="https://github.com" target="_blank">GitHub</a>
+      <a class="nav-btn" href="https://youtube.com" target="_blank">YouTube</a>
+    </div>
+    <p style="font-size:12px;color:#94a3b8;margin:10px 0 4px">小游戏</p>
+    <div class="nav-grid">
+      <a class="nav-btn" href="https://eaglercraft.com" target="_blank">Eaglercraft</a>
+      <a class="nav-btn" href="https://krunker.io" target="_blank">Krunker</a>
+      <a class="nav-btn" href="https://agar.io" target="_blank">Agar.io</a>
+      <a class="nav-btn" href="https://slither.io" target="_blank">Slither.io</a>
+    </div>
+    <p style="font-size:12px;color:#94a3b8;margin:10px 0 4px">我的世界</p>
+    <div class="nav-grid">
+      <a class="nav-btn" href="https://www.mcmod.cn" target="_blank">MC百科</a>
+      <a class="nav-btn" href="https://www.chunkbase.com" target="_blank">Chunk Base</a>
+      <a class="nav-btn" href="https://www.minecraftskins.com" target="_blank">皮肤编辑器</a>
+      <a class="nav-btn" href="https://mcseedmap.net" target="_blank">种子地图</a>
+    </div>
+  </div>
+
+  <div class="card hidden">
+    <h2>📁 我的文件</h2>
+    <p style="font-size:12px;color:#64748b">暂未开放（存储后端调整中）</p>
+  </div>
+
+</main>
 
 <script>
 const API='';
-let token='';
+let token=localStorage.getItem('token');
+let username=localStorage.getItem('user');
 
-function msg(t,ok){const e=document.getElementById('msg');e.textContent=t;e.className='msg '+(ok?'ok':'err');}
+function showMsg(el,text,ok){
+  const e=document.getElementById(el);
+  e.textContent=text;e.className='msg '+(ok?'ok':'err');
+}
+function switchTab(t){
+  document.getElementById('login-panel').classList.toggle('hidden',t!=='login');
+  document.getElementById('reg-panel').classList.toggle('hidden',t!=='reg');
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',(i===0&&t==='login')||(i===1&&t==='reg')));
+}
 
-async function sha256(s){return [...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))].map(b=>b.toString(16).padStart(2,'0')).join('');}
+async function doRegister(){
+  const u=document.getElementById('reg-user').value.trim();
+  const p=document.getElementById('reg-pass').value;
+  const r=await fetch(API+'/api/register',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({username:u,password:p})});
+  const j=await r.json();
+  showMsg('gate-msg',j.msg,j.ok);
+  if(j.ok){document.getElementById('reg-user').value='';document.getElementById('reg-pass').value='';switchTab('login');}
+}
 
-async function adminLogin(){
-  const u=document.getElementById('u').value.trim(),p=document.getElementById('p').value;
+async function doLogin(){
+  const u=document.getElementById('login-user').value.trim();
+  const p=document.getElementById('login-pass').value;
   const r=await fetch(API+'/api/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({username:u,password:p})});
   const j=await r.json();
-  if(!j.ok||j.username!=='admin'){msg(j.msg||'管理员验证失败',false);return;}
-  token=j.token;
-  const w=await fetch(API+'/api/whoami',{headers:{authorization:'Bearer '+token}}).then(r=>r.json());
-  if(!w.ok||w.username!=='admin'){msg('非管理员账号',false);return;}
-  document.getElementById('gate').style.display='none';
-  document.getElementById('app').style.display='block';
-  document.getElementById('who').textContent='@admin';
-  loadUsers();
+  if(j.ok){
+    token=j.token;username=j.username;
+    localStorage.setItem('token',token);localStorage.setItem('user',username);
+    enterMain();
+  }else showMsg('gate-msg',j.msg,false);
 }
 
-function logout(){token='';document.getElementById('gate').style.display='block';document.getElementById('app').style.display='none';}
-
-async function loadUsers(){
-  const tb=document.getElementById('users');tb.innerHTML='<tr><td colspan="3" class="muted">加载中…</td></tr>';
-  const r=await fetch(API+'/api/admin-users',{headers:{authorization:'Bearer '+token}});
-  const j=await r.json();
-  if(!j.ok){tb.innerHTML='<tr><td colspan="3" class="muted">'+(j.msg||'加载失败')+'</td></tr>';return;}
-  if(!j.users.length){tb.innerHTML='<tr><td colspan="3" class="muted">暂无用户</td></tr>';return;}
-  tb.innerHTML=j.users.map(u=>'<tr><td>'+u.username+(u.isAdmin?' 👑':'')+'</td><td class="muted">'+(u.created?new Date(u.created).toLocaleString('zh-CN'):'-')+'</td><td><button class="danger" onclick="delUser(\''+u.username+'\')">删除</button></td></tr>').join('');
-  const usage=document.getElementById('usage');usage.innerHTML=j.users.map(u=>u.username+'：'+(u.fileCount||0)+' 个文件 / 已用 '+((u.usedBytes||0)/1024).toFixed(1)+' KB').join('<br>')||'无数据';
+function logout(){
+  token='';username='';
+  localStorage.removeItem('token');localStorage.removeItem('user');
+  localStorage.removeItem('todos_'+username);
+  location.reload();
 }
 
-async function delUser(name){
-  if(!confirm('确定删除用户「'+name+'」？将清除其账号和会话。'))return;
-  const r=await fetch(API+'/api/admin-delete-user',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+token},body:JSON.stringify({username:name})});
-  const j=await r.json();msg(j.msg||(j.ok?'已删除':'失败'),j.ok);if(j.ok)loadUsers();
+function enterMain(){
+  document.getElementById('gate').classList.add('hidden');
+  document.getElementById('main-header').classList.remove('hidden');
+  document.getElementById('main').classList.remove('hidden');
+  loadTodos();
+}
+
+if(token&&username){
+  fetch(API+'/api/whoami',{headers:{authorization:'Bearer '+token}}).then(r=>r.json()).then(j=>{
+    if(j.ok) enterMain(); else {localStorage.clear();}
+  }).catch(()=>localStorage.clear());
+}
+
+function loadTodos(){
+  const list=document.getElementById('todo-list');
+  const key='todos_'+username;
+  const todos=JSON.parse(localStorage.getItem(key)||'[]');
+  list.innerHTML=todos.map((t,i)=>'<div class="todo-item '+(t.done?'done':'')+'"><input type="checkbox" '+(t.done?'checked':'')+' onchange="toggleTodo('+i+')"><span>'+t.text+'</span><button onclick="delTodo('+i+')" style="margin-left:auto;font-size:12px;background:none;border:none;color:#ef4444;cursor:pointer">✕</button></div>').join('');
+}
+function addTodo(){
+  const input=document.getElementById('todo-input');const text=input.value.trim();
+  if(!text) return;
+  const key='todos_'+username;
+  const todos=JSON.parse(localStorage.getItem(key)||'[]');
+  todos.push({text,done:false});localStorage.setItem(key,JSON.stringify(todos));
+  input.value='';loadTodos();
+}
+function toggleTodo(i){
+  const key='todos_'+username;
+  const todos=JSON.parse(localStorage.getItem(key)||'[]');
+  todos[i].done=!todos[i].done;localStorage.setItem(key,JSON.stringify(todos));loadTodos();
+}
+function delTodo(i){
+  const key='todos_'+username;
+  const todos=JSON.parse(localStorage.getItem(key)||'[]');
+  todos.splice(i,1);localStorage.setItem(key,JSON.stringify(todos));loadTodos();
+}
+
+// 工具函数
+async function toolWeather(){
+  const o=document.getElementById('tool-output');o.textContent='获取中...';
+  try{
+    const geo=await fetch('https://geocoding-api.open-meteo.com/v1/search?count=1&name='+encodeURIComponent('Beijing')).then(r=>r.json());
+    if(!geo.results)return o.textContent='定位失败';
+    const w=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+geo.results[0].latitude+'&longitude='+geo.results[0].longitude+'&current_weather=true').then(r=>r.json());
+    o.textContent='🌤️ '+geo.results[0].name+' | 温度: '+w.current_weather.temperature+'°C | 风速: '+w.current_weather.windspeed+'km/h';
+  }catch(e){o.textContent='天气获取失败';}
+}
+function toolQuote(){
+  const o=document.getElementById('tool-output');
+  fetch('https://v1.hitokoto.cn/?encode=json').then(r=>r.json()).then(j=>o.textContent='💬 '+j.hitokoto).catch(()=>o.textContent='获取失败');
+}
+function toolMC(){
+  const seed=prompt('输入MC种子（数字或字符串）：');if(!seed)return;
+  let h=0;for(let i=0;i<seed.length;i++){h=(h<<5)-h+seed.charCodeAt(i);h|=0;}
+  document.getElementById('tool-output').textContent='🧱 种子哈希值: '+h+'（Java版MurmurHash2）';
+}
+function toolPass(){
+  const len=parseInt(prompt('密码长度（默认16）：','16'))||16;
+  const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+  let p='';for(let i=0;i<len;i++) p+=chars[Math.floor(Math.random()*chars.length)];
+  document.getElementById('tool-output').innerHTML='🔑 <code style="background:#1e293b;padding:2px 6px;border-radius:4px">'+p+'</code> <button onclick="navigator.clipboard.writeText(\''+p+'\')" style="font-size:12px;padding:2px 6px;border-radius:4px;border:1px solid #334155;background:#1e293b;color:#e2e8f0;cursor:pointer">复制</button>';
+}
+function toolBase64(){
+  const s=prompt('输入要编码的文本：');if(s===null)return;
+  document.getElementById('tool-output').textContent='📦 '+btoa(unescape(encodeURIComponent(s)));
+}
+function toolColor(){
+  const c=document.createElement('input');c.type='color';c.value='#38bdf8';
+  c.oninput=()=>document.getElementById('tool-output').textContent='🎨 '+c.value;
+  c.click();
+}
+function toolCalc(){
+  const expr=prompt('输入算式（如 12*34+5）：');if(!expr)return;
+  try{document.getElementById('tool-output').textContent='🧮 = '+Function('"use strict";return ('+expr+')')();}
+  catch(e){document.getElementById('tool-output').textContent='计算错误';}
+}
+let pomoTimer=null,pomoLeft=1500;
+function toolPomo(){
+  const o=document.getElementById('tool-output');
+  if(pomoTimer){clearInterval(pomoTimer);pomoTimer=null;o.textContent='⏱️ 已停止';return;}
+  pomoLeft=1500;o.textContent='⏱️ 25:00';
+  pomoTimer=setInterval(()=>{pomoLeft--;if(pomoLeft<0){clearInterval(pomoTimer);pomoTimer=null;o.textContent='⏱️ 时间到！';return;}o.textContent='⏱️ '+String(Math.floor(pomoLeft/60)).padStart(2,'0')+':'+String(pomoLeft%60).padStart(2,'0');},1000);
 }
 </script>
 </body>
