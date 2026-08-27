@@ -23,7 +23,7 @@ button:hover{filter:brightness(1.1)}
 .weather-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
 .weather-item{background:#0d1117;padding:8px;border-radius:8px;border:1px solid var(--border)}
 .weather-item .label{font-size:11px;color:var(--muted)}
-.weather-item .val{font-size:18px;color:var(--ok);font-weight:600}
+.weather-item .val{font-size:18px;color:var(--ok);font-size:600}
 .quote-text{font-size:15px;line-height:1.6;padding:10px;background:#0d1117;border-radius:8px;border-left:3px solid var(--accent);margin-top:8px}
 .quote-source{font-size:12px;color:var(--muted);margin-top:4px}
 .todo li{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px dashed var(--border)}
@@ -187,7 +187,7 @@ function rnd(){document.getElementById('rndOut').textContent=Math.floor(Math.ran
 // 换算
 function conv(){const f=document.getElementById('convFrom').value,t=document.getElementById('convTo').value,v=parseFloat(document.getElementById('convVal').value)||0,o=v;if(f==='cm'&&t==='m')o=v/100;if(f==='m'&&t==='cm')o=v*100;if(f==='kg'&&t==='g')o=v*1000;document.getElementById('convOut').textContent=o;}
 
-// 待办（localStorage，按登录态隔离 key）
+// 待办（localStorage，按"是否已登录门禁"隔离 key）
 const todoKey='gf_todo'+(sessionStorage.getItem('gate_ok')==='1'?'_ok':'');
 function renderTodo(){const a=JSON.parse(localStorage.getItem(todoKey)||'[]');document.getElementById('todoList').innerHTML=a.map((x,i)=>`<li><span>${x}</span><button onclick="delTodo(${i})">✕</button></li>`).join('');}
 function addTodo(){const v=document.getElementById('todoIn').value.trim();if(!v)return;const a=JSON.parse(localStorage.getItem(todoKey)||'[]');a.push(v);localStorage.setItem(todoKey,JSON.stringify(a));document.getElementById('todoIn').value='';renderTodo();}
@@ -208,9 +208,8 @@ function b64(m){const v=document.getElementById('b64In').value;try{document.getE
 const termKey='gf_term';const termEl=document.getElementById('term');const termStatus=document.getElementById('termStatus');
 function loadTermUI(){const t=JSON.parse(localStorage.getItem(termKey)||'null');if(t){document.getElementById('termStart').value=t.start;document.getElementById('termEnd').value=t.end;}updateTerm();}
 function saveTerm(){const s=document.getElementById('termStart').value,e=document.getElementById('termEnd').value;if(!s||!e){termStatus.textContent='请填两个日期';return;}localStorage.setItem(termKey,JSON.stringify({start:s,end:e}));termStatus.textContent='已保存';updateTerm();}
-function updateTerm(){const t=JSON.parse(localStorage.getItem(termKey)||'null');if(!t){termEl.textContent='--';return;}const now=Date.now(),start=new Date(t.start).getTime(),end=new Date(t.end).getTime();if(now<start){termEl.textContent='开学还有 '+Math.ceil((start-now)/86400000)+' 天';termStatus.textContent='开学前';return;}if(now<=end){const total=end-start,elapsed=now-start;termEl.textContent=Math.max(0,Math.min(100,Math.round(elapsed/total*100)))+'%';termStatus.textContent='本学期进行中';return;}termEl.textContent='放假第 '+Math.floor((now-end)/86400000)+' 天';termStatus.textContent='🏖️ 假期中';}
+function updateTerm(){const t=JSON.parse(localStorage.getItem(termKey)||'null');if(!t){termEl.textContent='--';return;}const now=Date.now(),start=new Date(t.start).getTime(),end=new Date(t.end).getTime();if(now<start){termEl.textContent='开学还有 '+Math.ceil((start-now)/86400000)+' 天';termStatus.textContent='开学前';return;}if(now<=end){const total=end-start,elapsed=now-start;termEl.textContent=Math.max(0,Math.min(100,Math.round(elapsed/total*100)))+'%';termStatus.textContent='本学期进行中';return;}const next=new Date(t.nextStart||'').getTime();if(next>now){termEl.textContent='距开学 '+Math.ceil((next-now)/86400000)+' 天';termStatus.textContent='🏖️ 假期中';return;}termEl.textContent='放假第 '+Math.floor((now-end)/86400000)+' 天';termStatus.textContent='🏖️ 假期中';}
 loadTermUI();setInterval(updateTerm,600000);
 </script>
 </body>
 </html>
-
