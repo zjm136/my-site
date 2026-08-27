@@ -5,26 +5,92 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>greenfir · 管理后台</title>
 <style>
-body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;max-width:760px;margin:0 auto;padding:20px;background:#0f172a;color:#e2e8f0}
-.card{background:#111827;border:1px solid #1f2937;border-radius:12px;padding:16px;margin-top:14px}
-button{font:inherit;padding:8px 12px;border-radius:8px;border:1px solid #1f2937;background:#38bdf8;color:#0b1220;font-weight:600;cursor:pointer}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
+header{background:#111827;border-bottom:1px solid #1f2937;padding:12px 20px;display:flex;justify-content:space-between;align-items:center}
+header h1{font-size:18px;color:#38bdf8}
+main{padding:20px;max-width:1000px;margin:0 auto}
+.card{background:#111827;border:1px solid #1f2937;border-radius:12px;padding:16px;margin-bottom:16px}
+.card h2{font-size:15px;color:#38bdf8;margin-bottom:12px}
+input{font:inherit;font-size:14px;width:100%;padding:8px 10px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#e2e8f0;margin-bottom:8px}
+button{font:inherit;font-size:14px;padding:8px 14px;border-radius:8px;border:none;background:#38bdf8;color:#0b1220;font-weight:600;cursor:pointer}
+button:hover{background:#7dd3fc}
+button.danger{background:transparent;color:#ef4444;border:1px solid #ef4444}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:8px;border-bottom:1px solid #1f2937}
+th{color:#94a3b8;font-weight:500}
 .muted{color:#94a3b8;font-size:13px}
-a.back{color:#38bdf8;text-decoration:none;font-size:14px}
+.msg{font-size:13px;margin-top:6px;padding:6px 8px;border-radius:6px}
+.msg.ok{background:#052e16;color:#4ade80}
+.msg.err{background:#450a0a;color:#f87171}
+#app{display:none}
 </style>
 </head>
 <body>
-<p><a class="back" href="/">← 返回门户</a></p>
-<h1>🛠️ 管理后台</h1>
-<div id="box" class="card"><p>当前：<span id="u"></span></p></div>
-<div class="card">
-  <h2>功能占位</h2>
-  <p class="muted">后续可加：注册用户列表 / 重置密码 / 按用户删除全部文件 / 站点用量统计。</p>
+
+<div id="gate" class="card" style="max-width:360px;margin:60px auto">
+  <h2>🔐 管理员验证</h2>
+  <input id="u" placeholder="管理员账号">
+  <input id="p" type="password" placeholder="密码">
+  <button onclick="adminLogin()">进入后台</button>
+  <div id="msg"></div>
 </div>
+
+<div id="app">
+  <header>
+    <h1>🛠️ greenfir 管理后台</h1>
+    <div><span id="who" class="muted"></span> <button onclick="logout()">退出</button></div>
+  </header>
+  <main>
+    <div class="card">
+      <h2>👥 注册用户</h2>
+      <table><thead><tr><th>账号</th><th>创建时间</th><th>操作</th></tr></thead><tbody id="users"></tbody></table>
+    </div>
+    <div class="card">
+      <h2>📊 全站用量</h2>
+      <div id="usage" class="muted">加载中…</div>
+    </div>
+  </main>
+</div>
+
 <script>
-const u=localStorage.getItem('user');
-document.getElementById('u').textContent=u||'(未登录)';
-if(u!=='admin'){
-  document.getElementById('box').innerHTML='<h2>无权访问</h2><p class="muted">仅 admin 账户可进入后台。</p>';
+const API='';
+let token='';
+
+function msg(t,ok){const e=document.getElementById('msg');e.textContent=t;e.className='msg '+(ok?'ok':'err');}
+
+async function sha256(s){return [...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))].map(b=>b.toString(16).padStart(2,'0')).join('');}
+
+async function adminLogin(){
+  const u=document.getElementById('u').value.trim(),p=document.getElementById('p').value;
+  const r=await fetch(API+'/api/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({username:u,password:p})});
+  const j=await r.json();
+  if(!j.ok||j.username!=='admin'){msg(j.msg||'管理员验证失败',false);return;}
+  token=j.token;
+  const w=await fetch(API+'/api/whoami',{headers:{authorization:'Bearer '+token}}).then(r=>r.json());
+  if(!w.ok||w.username!=='admin'){msg('非管理员账号',false);return;}
+  document.getElementById('gate').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('who').textContent='@admin';
+  loadUsers();
+}
+
+function logout(){token='';document.getElementById('gate').style.display='block';document.getElementById('app').style.display='none';}
+
+async function loadUsers(){
+  const tb=document.getElementById('users');tb.innerHTML='<tr><td colspan="3" class="muted">加载中…</td></tr>';
+  const r=await fetch(API+'/api/admin-users',{headers:{authorization:'Bearer '+token}});
+  const j=await r.json();
+  if(!j.ok){tb.innerHTML='<tr><td colspan="3" class="muted">'+(j.msg||'加载失败')+'</td></tr>';return;}
+  if(!j.users.length){tb.innerHTML='<tr><td colspan="3" class="muted">暂无用户</td></tr>';return;}
+  tb.innerHTML=j.users.map(u=>'<tr><td>'+u.username+(u.isAdmin?' 👑':'')+'</td><td class="muted">'+(u.created?new Date(u.created).toLocaleString('zh-CN'):'-')+'</td><td><button class="danger" onclick="delUser(\''+u.username+'\')">删除</button></td></tr>').join('');
+  const usage=document.getElementById('usage');usage.innerHTML=j.users.map(u=>u.username+'：'+(u.fileCount||0)+' 个文件 / 已用 '+((u.usedBytes||0)/1024).toFixed(1)+' KB').join('<br>')||'无数据';
+}
+
+async function delUser(name){
+  if(!confirm('确定删除用户「'+name+'」？将清除其账号和会话。'))return;
+  const r=await fetch(API+'/api/admin-delete-user',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+token},body:JSON.stringify({username:name})});
+  const j=await r.json();msg(j.msg||(j.ok?'已删除':'失败'),j.ok);if(j.ok)loadUsers();
 }
 </script>
 </body>
