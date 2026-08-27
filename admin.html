@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>greenfir · 管理后台</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;max-width:760px;margin:0 auto;padding:20px;background:#0f172a;color:#e2e8f0}
+.card{background:#111827;border:1px solid #1f2937;border-radius:12px;padding:16px;margin-top:14px}
+button{font:inherit;padding:8px 12px;border-radius:8px;border:1px solid #1f2937;background:#38bdf8;color:#0b1220;font-weight:600;cursor:pointer}
+.muted{color:#94a3b8;font-size:13px}
+a.back{color:#38bdf8;text-decoration:none;font-size:14px}
+</style>
+</head>
+<body>
+<p><a class="back" href="/">← 返回门户</a></p>
+<h1>🛠️ 管理后台</h1>
+<div id="box" class="card"><p>当前：<span id="u"></span></p></div>
+<div class="card">
+  <h2>功能占位</h2>
+  <p class="muted">后续可加：注册用户列表 / 重置密码 / 按用户删除全部文件 / 站点用量统计。</p>
+</div>
+<script>
+const u=localStorage.getItem('user');
+document.getElementById('u').textContent=u||'(未登录)';
+if(u!=='admin'){
+  document.getElementById('box').innerHTML='<h2>无权访问</h2><p class="muted">仅 admin 账户可进入后台。</p>';
+}
+</script>
+</body>
+</html>
