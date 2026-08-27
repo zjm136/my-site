@@ -28,12 +28,6 @@ button.primary:hover{background:#7dd3fc}
 .tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .tool-btn{font:inherit;font-size:12px;padding:6px 8px;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#cbd5e1;cursor:pointer;text-align:left}
 .tool-btn:hover{background:#1e293b}
-.file-item{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #1f2937;font-size:13px}
-.file-item:last-child{border-bottom:none}
-.file-item a{color:#38bdf8;text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px}
-.file-item button{font:inherit;font-size:12px;padding:2px 8px;border-radius:4px;border:1px solid #ef4444;background:transparent;color:#ef4444;cursor:pointer}
-.progress{height:4px;background:#1f2937;border-radius:2px;overflow:hidden;margin-top:6px;display:none}
-.progress-bar{height:100%;background:#38bdf8;width:0;transition:width .2s}
 .nav-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .nav-btn{font:inherit;font-size:12px;padding:8px;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#cbd5e1;cursor:pointer;text-decoration:none;text-align:center;display:block}
 .nav-btn:hover{background:#1e293b}
@@ -127,14 +121,9 @@ button.primary:hover{background:#7dd3fc}
     </div>
   </div>
 
-  <div class="card">
+  <div class="card hidden">
     <h2>📁 我的文件</h2>
-    <p style="font-size:12px;color:#94a3b8;margin-bottom:8px">单文件最大10MB，每账号200MB</p>
-    <input type="file" id="file-input">
-    <button class="primary" onclick="doUpload()">上传</button>
-    <div class="progress" id="progress"><div class="progress-bar" id="progress-bar"></div></div>
-    <div id="upload-msg"></div>
-    <div id="file-list" style="margin-top:10px"></div>
+    <p style="font-size:12px;color:#64748b">暂未开放（存储后端调整中）</p>
   </div>
 
   <div class="card">
@@ -193,48 +182,12 @@ function enterMain(){
   document.getElementById('main').classList.remove('hidden');
   document.getElementById('who').textContent='@'+username;
   loadTodos();
-  loadFiles();
 }
 
 if(token&&username){
   fetch(API+'/api/whoami',{headers:{authorization:'Bearer '+token}}).then(r=>r.json()).then(j=>{
     if(j.ok) enterMain(); else {localStorage.clear();}
   }).catch(()=>localStorage.clear());
-}
-
-async function doUpload(){
-  const input=document.getElementById('file-input');
-  if(!input.files.length) return showMsg('upload-msg','请选择文件',false);
-  const fd=new FormData();fd.append('file',input.files[0]);
-  const prog=document.getElementById('progress');prog.style.display='block';
-  const bar=document.getElementById('progress-bar');bar.style.width='30%';
-  try{
-    const r=await fetch(API+'/api/upload',{method:'POST',headers:{authorization:'Bearer '+token},body:fd});
-    bar.style.width='100%';
-    const j=await r.json();
-    showMsg('upload-msg',j.ok?'上传成功: '+j.name:'失败: '+j.msg,j.ok);
-    if(j.ok){input.value='';loadFiles();}
-  }catch(e){bar.style.width='0';showMsg('upload-msg','上传出错',false);}
-  setTimeout(()=>prog.style.display='none',1500);
-}
-
-async function loadFiles(){
-  const el=document.getElementById('file-list');el.innerHTML='<p style="color:#64748b;font-size:12px">加载中...</p>';
-  try{
-    const r=await fetch(API+'/api/files',{headers:{authorization:'Bearer '+token}});
-    const j=await r.json();
-    if(!j.ok){el.innerHTML='<p style="color:#ef4444;font-size:12px">'+j.msg+'</p>';return;}
-    if(!j.items.length){el.innerHTML='<p style="color:#64748b;font-size:12px">暂无文件</p>';return;}
-    el.innerHTML=j.items.map(it=>'<div class="file-item"><a href="'+(it.url||'#')+'" target="_blank">'+it.name+'</a><button onclick="delFile(\''+it.key+'\')">删除</button></div>').join('');
-  }catch(e){el.innerHTML='<p style="color:#ef4444;font-size:12px">加载失败</p>';}
-}
-
-async function delFile(key){
-  if(!confirm('确定删除？')) return;
-  const r=await fetch(API+'/api/delete',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+token},body:JSON.stringify({key})});
-  const j=await r.json();
-  showMsg('upload-msg',j.msg,j.ok);
-  if(j.ok) loadFiles();
 }
 
 function loadTodos(){
@@ -266,7 +219,6 @@ function delTodo(i){
 async function toolWeather(){
   const o=document.getElementById('tool-output');o.textContent='获取中...';
   try{
-    const ip=await fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(j=>j.ip);
     const geo=await fetch('https://geocoding-api.open-meteo.com/v1/search?count=1&name='+encodeURIComponent('Beijing')).then(r=>r.json());
     if(!geo.results)return o.textContent='定位失败';
     const w=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+geo.results[0].latitude+'&longitude='+geo.results[0].longitude+'&current_weather=true').then(r=>r.json());
@@ -312,3 +264,4 @@ function toolPomo(){
 </script>
 </body>
 </html>
+
