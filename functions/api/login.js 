@@ -1,0 +1,15 @@
+const enc=new TextEncoder();
+const CORS={'content-type':'application/json','access-control-allow-origin':'*','access-control-allow-headers':'content-type'};
+function json(b,s=200){return new Response(JSON.stringify(b),{status:s,headers:CORS});}
+function b64(s){return btoa(unescape(encodeURIComponent(s)));}
+async function sha256(hex){const h=await crypto.subtle.digest('SHA-256',enc.encode(hex));return [...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,'0')).join('');}
+export async function onRequestOptions(){return new Response(null,{status:204,headers:CORS});}
+export async function onRequestPost({request,env}){
+  const {username,password}=await request.json().catch(()=>null);
+  const data=await env.USER_DB.get('u:'+username); if(!data) return json({ok:false,msg:'账号不存在'},401);
+  const {hash}=JSON.parse(data);
+  if(hash!==await sha256(password)) return json({ok:false,msg:'密码错误'},401);
+  const token=b64(username+':'+crypto.randomUUID());
+  await env.USER_DB.put('s:'+username,JSON.stringify({token,loginAt:Date.now()}));
+  return json({ok:true,token,username});
+}
