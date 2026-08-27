@@ -5,15 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>greenfir · 个人门户</title>
 <style>
-:root{
-  --bg:#0d1117; --card:#161b22; --border:#30363d;
-  --text:#c9d1d9; --muted:#8b949e; --accent:#58a6ff; --ok:#3fb950; --warn:#d29922;
-}
+:root{--bg:#0d1117;--card:#161b22;--border:#30363d;--text:#c9d1d9;--muted:#8b949e;--accent:#58a6ff;--ok:#3fb950;--warn:#d29922}
 *{box-sizing:border-box}
-body{
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
-  max-width:960px;margin:0 auto;padding:18px;background:var(--bg);color:var(--text);
-}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;max-width:960px;margin:0 auto;padding:18px;background:var(--bg);color:var(--text)}
 h1{color:var(--accent);margin:6px 0;font-size:24px}
 .top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .badge{font-size:12px;color:var(--muted);border:1px solid var(--border);padding:4px 10px;border-radius:20px}
@@ -25,7 +19,7 @@ input,button,select{font:inherit;padding:8px 10px;border-radius:8px;border:1px s
 button{background:var(--accent);color:#0d1117;border:none;font-weight:600;cursor:pointer}
 button:hover{filter:brightness(1.1)}
 .muted{color:var(--muted);font-size:13px}
-.big{font-size:28px;font-weight:700}
+.big{font-size:26px;font-weight:700}
 .weather-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
 .weather-item{background:#0d1117;padding:8px;border-radius:8px;border:1px solid var(--border)}
 .weather-item .label{font-size:11px;color:var(--muted)}
@@ -35,9 +29,21 @@ button:hover{filter:brightness(1.1)}
 .todo li{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px dashed var(--border)}
 .todo li:last-child{border:none}
 .todo button{background:transparent;color:var(--muted);font-size:16px}
+#gate{position:fixed;inset:0;background:#0f172a;color:#e2e8f0;display:flex;align-items:center;justify-content:center;z-index:9999}
+#gate .box{background:#161b22;border:1px solid var(--border);padding:22px;border-radius:14px;text-align:center}
 </style>
 </head>
 <body>
+
+<div id="gate">
+  <div class="box">
+    <h2 style="color:var(--accent);margin-top:0">🔐 输入访问口令</h2>
+    <div class="muted" style="margin-bottom:8px">口令由站点主人告知</div>
+    <input id="pw" type="password" placeholder="口令">
+    <button onclick="checkPW()">进入</button>
+    <p id="err" style="color:#f87171;height:1em;margin-top:8px"></p>
+  </div>
+</div>
 
 <div class="top">
   <div>
@@ -55,7 +61,7 @@ button:hover{filter:brightness(1.1)}
   <div class="card">
     <h2>🌤️ 天气</h2>
     <div class="row">
-      <input id="city" placeholder="城市名，如 北京 / beijing" value="北京" style="flex:1">
+      <input id="city" placeholder="城市名，如 北京 / shanghai" value="北京" style="flex:1">
       <button onclick="getWeather()">查询</button>
     </div>
     <div id="weather"><div class="muted">点击查询获取天气</div></div>
@@ -135,14 +141,24 @@ button:hover{filter:brightness(1.1)}
   </div>
 
   <div class="card">
-    <h2>📚 学期进度</h2>
-    <div class="muted">示例学期：2026-09-01 至 2027-01-20</div>
+    <h2>📚 学期 / 假期</h2>
+    <div class="muted" style="margin-bottom:8px">
+      开学 <input type="date" id="termStart" style="color:var(--text)">
+      结束 <input type="date" id="termEnd" style="color:var(--text)">
+      <button onclick="saveTerm()">保存</button>
+    </div>
+    <div id="termStatus" class="muted">尚未设置</div>
     <div id="term" class="big"></div>
   </div>
 
 </div>
 
 <script>
+// 登录口令（前端演示，纯练手；真鉴权请改用 Cloudflare Access / Pages Functions）
+const GATE="letmein";
+function checkPW(){const v=document.getElementById('pw').value;if(v===GATE){sessionStorage.setItem('gate_ok','1');document.getElementById('gate').style.display='none';}else document.getElementById('err').textContent='不对哦';}
+if(sessionStorage.getItem('gate_ok')==='1')document.getElementById('gate').style.display='none';
+
 // 时钟
 function tick(){document.getElementById('clock').textContent=new Date().toLocaleTimeString('zh-CN',{hour12:false});}
 setInterval(tick,1000);tick();
@@ -151,53 +167,12 @@ document.getElementById('date').textContent=new Date().toLocaleDateString('zh-CN
 // IP
 fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d=>document.getElementById('ip').textContent='IP '+d.ip).catch(()=>document.getElementById('ip').textContent='IP 获取失败');
 
-// 天气（open-meteo，免 Key，稳定 JSON，支持中文城市）
-function getWeather(){
-  const c=document.getElementById('city').value||'北京';
-  document.getElementById('weather').innerHTML='<div class="muted">查询中…</div>';
-  fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(c)+'&count=1&language=zh')
-  .then(r=>r.json())
-  .then(d=>{
-    if(!d.results||d.results.length===0){document.getElementById('weather').innerHTML='<div class="muted">找不到该城市</div>';return;}
-    const lat=d.results[0].latitude,lon=d.results[0].longitude;
-    const cityName=d.results[0].name,country=d.results[0].country;
-    return fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=auto');
-  })
-  .then(r=>r.json())
-  .then(d=>{
-    if(!d||!d.current) return;
-    const cur=d.current;
-    const codeMap={
-      0:'☀️ 晴朗',1:'🌤️ 大部晴朗',2:'⛅ 局部多云',3:'☁️ 阴天',
-      45:'🌫️ 雾',48:'🌫️ 沉积雾凇',
-      51:'🌧️ 小毛毛雨',53:'🌧️ 毛毛雨',55:'🌧️ 浓毛毛雨',
-      61:'🌧️ 小雨',63:'🌧️ 中雨',65:'🌧️ 大雨',
-      71:'❄️ 小雪',73:'❄️ 中雪',75:'❄️ 大雪',95:'⛈️ 雷暴'
-    };
-    const desc=codeMap[cur.weather_code]||'🌡️ 未知';
-    document.getElementById('weather').innerHTML=`
-      <div style="font-size:18px;color:var(--accent);margin-top:6px">${cityName||''}${country?', '+country:''}</div>
-      <div style="font-size:14px;color:var(--muted)">${desc}</div>
-      <div class="weather-grid">
-        <div class="weather-item"><div class="label">温度</div><div class="val">${cur.temperature_2m}°${d.current_units.temperature_2m||''}</div></div>
-        <div class="weather-item"><div class="label">体感</div><div class="val">${cur.apparent_temperature}°</div></div>
-        <div class="weather-item"><div class="label">湿度</div><div class="val">${cur.relative_humidity_2m}%</div></div>
-        <div class="weather-item"><div class="label">风速</div><div class="val">${cur.wind_speed_10m} km/h</div></div>
-      </div>`;
-  })
-  .catch(()=>document.getElementById('weather').innerHTML='<div class="muted">获取失败</div>');
-}
+// 天气（open-meteo，免 Key，支持中文城市）
+function getWeather(){const c=document.getElementById('city').value||'北京';document.getElementById('weather').innerHTML='<div class="muted">查询中…</div>';fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(c)+'&count=1&language=zh').then(r=>r.json()).then(d=>{if(!d.results||!d.results[0]){document.getElementById('weather').innerHTML='<div class="muted">未找到该城市</div>';return;}const r0=d.results[0];return fetch('https://api.open-meteo.com/v1/forecast?latitude='+r0.latitude+'&longitude='+r0.longitude+'&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=auto').then(r=>r.json()).then(fc=>({fc,r0}));}).then(o=>{if(!o)return;const cur=o.fc.current;const codeMap={0:'☀️ 晴朗',1:'🌤️ 大部晴朗',2:'⛅ 局部多云',3:'☁️ 阴天',45:'🌫️ 雾',51:'🌧️ 毛毛雨',61:'🌧️ 小雨',63:'🌧️ 中雨',65:'🌧️ 大雨',71:'❄️ 小雪',73:'❄️ 中雪',75:'❄️ 大雪',95:'⛈️ 雷暴'};const desc=codeMap[cur.weather_code]||'🌡️ 未知';document.getElementById('weather').innerHTML=`<div style="font-size:18px;color:var(--accent);margin-top:6px">${o.r0.name||''}${o.r0.country?', '+o.r0.country:''}</div><div style="font-size:14px;color:var(--muted)">${desc}</div><div class="weather-grid"><div class="weather-item"><div class="label">温度</div><div class="val">${cur.temperature_2m}°</div></div><div class="weather-item"><div class="label">体感</div><div class="val">${cur.apparent_temperature}°</div></div><div class="weather-item"><div class="label">湿度</div><div class="val">${cur.relative_humidity_2m}%</div></div><div class="weather-item"><div class="label">风速</div><div class="val">${cur.wind_speed_10m} km/h</div></div></div>`;}).catch(()=>document.getElementById('weather').innerHTML='<div class="muted">获取失败</div>');}
 getWeather();
 
 // 每日一句（hitokoto）
-function fetchQuote(){
-  document.getElementById('quote').textContent='加载中…';
-  document.getElementById('quoteSource').textContent='';
-  fetch('https://v1.hitokoto.cn/?encode=json').then(r=>r.json()).then(d=>{
-    document.getElementById('quote').textContent=d.hitokoto;
-    document.getElementById('quoteSource').textContent=d.from?'—— '+d.from:'';
-  }).catch(()=>document.getElementById('quote').textContent='加载失败，点一下换一句吧');
-}
+function fetchQuote(){document.getElementById('quote').textContent='加载中…';document.getElementById('quoteSource').textContent='';fetch('https://v1.hitokoto.cn/?encode=json').then(r=>r.json()).then(d=>{document.getElementById('quote').textContent=d.hitokoto;document.getElementById('quoteSource').textContent=d.from?'—— '+d.from:'';}).catch(()=>document.getElementById('quote').textContent='加载失败，点一下换一句吧');}
 fetchQuote();
 
 // 计算器
@@ -212,8 +187,9 @@ function rnd(){document.getElementById('rndOut').textContent=Math.floor(Math.ran
 // 换算
 function conv(){const f=document.getElementById('convFrom').value,t=document.getElementById('convTo').value,v=parseFloat(document.getElementById('convVal').value)||0,o=v;if(f==='cm'&&t==='m')o=v/100;if(f==='m'&&t==='cm')o=v*100;if(f==='kg'&&t==='g')o=v*1000;document.getElementById('convOut').textContent=o;}
 
-// 待办
-const todoKey='gf_todo';function renderTodo(){const a=JSON.parse(localStorage.getItem(todoKey)||'[]');document.getElementById('todoList').innerHTML=a.map((x,i)=>`<li><span>${x}</span><button onclick="delTodo(${i})">✕</button></li>`).join('');}
+// 待办（localStorage，按登录态隔离 key）
+const todoKey='gf_todo'+(sessionStorage.getItem('gate_ok')==='1'?'_ok':'');
+function renderTodo(){const a=JSON.parse(localStorage.getItem(todoKey)||'[]');document.getElementById('todoList').innerHTML=a.map((x,i)=>`<li><span>${x}</span><button onclick="delTodo(${i})">✕</button></li>`).join('');}
 function addTodo(){const v=document.getElementById('todoIn').value.trim();if(!v)return;const a=JSON.parse(localStorage.getItem(todoKey)||'[]');a.push(v);localStorage.setItem(todoKey,JSON.stringify(a));document.getElementById('todoIn').value='';renderTodo();}
 function delTodo(i){const a=JSON.parse(localStorage.getItem(todoKey)||'[]');a.splice(i,1);localStorage.setItem(todoKey,JSON.stringify(a));renderTodo();}
 renderTodo();
@@ -228,8 +204,13 @@ document.getElementById('color').addEventListener('input',e=>document.getElement
 // Base64
 function b64(m){const v=document.getElementById('b64In').value;try{document.getElementById('b64Out').textContent=m==='encode'?btoa(unescape(encodeURIComponent(v))):decodeURIComponent(escape(atob(v)));}catch(e){document.getElementById('b64Out').textContent='解码失败';}}
 
-// 学期进度
-(function(){const start=new Date('2026-09-01'),end=new Date('2027-01-20');function up(){const total=end-start,elapsed=Math.min(total,new Date()-start);document.getElementById('term').textContent=total<=0?'--':Math.round(elapsed/total*100)+'%';}up();setInterval(up,600000);})();
+// 学期/假期（可配置 + 自动假期切换）
+const termKey='gf_term';const termEl=document.getElementById('term');const termStatus=document.getElementById('termStatus');
+function loadTermUI(){const t=JSON.parse(localStorage.getItem(termKey)||'null');if(t){document.getElementById('termStart').value=t.start;document.getElementById('termEnd').value=t.end;}updateTerm();}
+function saveTerm(){const s=document.getElementById('termStart').value,e=document.getElementById('termEnd').value;if(!s||!e){termStatus.textContent='请填两个日期';return;}localStorage.setItem(termKey,JSON.stringify({start:s,end:e}));termStatus.textContent='已保存';updateTerm();}
+function updateTerm(){const t=JSON.parse(localStorage.getItem(termKey)||'null');if(!t){termEl.textContent='--';return;}const now=Date.now(),start=new Date(t.start).getTime(),end=new Date(t.end).getTime();if(now<start){termEl.textContent='开学还有 '+Math.ceil((start-now)/86400000)+' 天';termStatus.textContent='开学前';return;}if(now<=end){const total=end-start,elapsed=now-start;termEl.textContent=Math.max(0,Math.min(100,Math.round(elapsed/total*100)))+'%';termStatus.textContent='本学期进行中';return;}termEl.textContent='放假第 '+Math.floor((now-end)/86400000)+' 天';termStatus.textContent='🏖️ 假期中';}
+loadTermUI();setInterval(updateTerm,600000);
 </script>
 </body>
 </html>
+
