@@ -6,43 +6,47 @@
 <title>greenfir 控制台</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
-header{background:#111827;border-bottom:1px solid #1f2937;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
-header h1{font-size:18px;font-weight:700;color:#38bdf8}
-header button{font:inherit;font-size:13px;padding:6px 12px;border-radius:8px;border:1px solid #334155;background:#1e293b;color:#e2e8f0;cursor:pointer}
-header button:hover{background:#334155}
-main{padding:20px;max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
-.card{background:#111827;border:1px solid #1f2937;border-radius:12px;padding:16px}
-.card h2{font-size:15px;margin-bottom:12px;color:#38bdf8}
-input{font:inherit;font-size:14px}
-input[type=text],input[type=password]{width:100%;padding:8px 10px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#e2e8f0;margin-bottom:8px}
-button.primary{font:inherit;font-size:14px;padding:8px 14px;border-radius:8px;border:none;background:#38bdf8;color:#0b1220;font-weight:600;cursor:pointer;width:100%}
-button.primary:hover{background:#7dd3fc}
-.tabs{display:flex;gap:4px;margin-bottom:12px}
-.tab-btn{flex:1;padding:6px;border-radius:6px;border:1px solid #334155;background:transparent;color:#94a3b8;cursor:pointer}
-.tab-btn.active{background:#38bdf8;color:#0b1220;border-color:#38bdf8}
-.msg{font-size:13px;margin-top:6px;padding:6px 8px;border-radius:6px}
-.msg.ok{background:#052e16;color:#4ade80}
-.msg.err{background:#450a0a;color:#f87171}
-.tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.tool-btn{font:inherit;font-size:12px;padding:6px 8px;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#cbd5e1;cursor:pointer;text-align:left}
-.tool-btn:hover{background:#1e293b}
-.nav-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.nav-btn{font:inherit;font-size:12px;padding:8px;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#cbd5e1;cursor:pointer;text-decoration:none;text-align:center;display:block}
-.nav-btn:hover{background:#1e293b}
-.todo-item{display:flex;gap:6px;align-items:center;padding:4px 0;font-size:14px}
-.todo-item input[type=checkbox]{accent-color:#38bdf8}
+:root{--bg:#0b1120;--card:rgba(17,24,39,0.82);--border:rgba(51,65,85,0.55);--text:#e2e8f0;--muted:#94a3b8;--accent:#38bdf8;--accent2:#818cf8}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC',sans-serif;background:radial-gradient(1200px 600px at 85% -5%,rgba(129,140,248,.16),transparent),radial-gradient(1000px 500px at -5% 5%,rgba(56,189,248,.12),transparent),var(--bg);color:var(--text);min-height:100vh;padding:20px}
+header{position:sticky;top:0;z-index:10;backdrop-filter:blur(10px);background:rgba(11,17,32,.72);border:1px solid var(--border);border-radius:16px;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:20px}
+header h1{font-size:19px;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:.5px}
+header button{font:inherit;font-size:13px;padding:7px 14px;border-radius:10px;border:1px solid var(--border);background:rgba(30,41,59,.6);color:var(--text);cursor:pointer;transition:.2s}
+header button:hover{background:rgba(56,189,248,.18);border-color:var(--accent)}
+main{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:18px}
+.card{background:var(--card);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:18px;padding:20px;box-shadow:0 10px 34px rgba(0,0,0,.28)}
+.card h2{font-size:13px;margin-bottom:14px;color:var(--accent);letter-spacing:.6px;text-transform:uppercase}
+input{font:inherit;font-size:14px;width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:rgba(15,23,42,.7);color:var(--text);margin-bottom:10px;transition:.2s}
+input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(56,189,248,.15)}
+button.primary{font:inherit;font-size:14px;padding:10px 16px;border-radius:10px;border:none;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#0b1220;font-weight:700;cursor:pointer;width:100%;transition:.2s}
+button.primary:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.tabs{display:flex;gap:6px;margin-bottom:16px;background:rgba(15,23,42,.6);padding:4px;border-radius:12px}
+.tab-btn{flex:1;padding:8px;border-radius:9px;border:none;background:transparent;color:var(--muted);cursor:pointer;font:inherit;font-size:13px;transition:.2s}
+.tab-btn.active{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#0b1220;font-weight:700}
+.msg{font-size:13px;margin-top:8px;padding:8px 10px;border-radius:8px}
+.msg.ok{background:rgba(5,46,22,.6);color:#4ade80}
+.msg.err{background:rgba(69,10,10,.6);color:#f87171}
+.tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tool-btn{font:inherit;font-size:12px;padding:10px 8px;border-radius:10px;border:1px solid var(--border);background:rgba(15,23,42,.5);color:#cbd5e1;cursor:pointer;text-align:left;transition:.15s}
+.tool-btn:hover{background:rgba(56,189,248,.14);border-color:var(--accent)}
+.nav-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.nav-btn{font:inherit;font-size:12px;padding:10px;border-radius:10px;border:1px solid var(--border);background:rgba(15,23,42,.5);color:#cbd5e1;cursor:pointer;text-decoration:none;text-align:center;display:block;transition:.15s}
+.nav-btn:hover{background:rgba(56,189,248,.14);border-color:var(--accent)}
+.todo-item{display:flex;gap:8px;align-items:center;padding:6px 0;font-size:14px;border-bottom:1px solid rgba(51,65,85,.4)}
+.todo-item:last-child{border:none}
+.todo-item input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
 .todo-item.done span{text-decoration:line-through;color:#64748b}
-#gate{position:fixed;inset:0;background:#0f172a;display:flex;align-items:center;justify-content:center;z-index:100}
-#gate .card{width:100%;max-width:360px}
+#gate{position:fixed;inset:0;background:radial-gradient(1200px 600px at 50% 0%,rgba(129,140,248,.18),transparent),var(--bg);display:flex;align-items:center;justify-content:center;z-index:100;padding:16px}
+#gate .card{width:100%;max-width:400px;box-shadow:0 24px 70px rgba(0,0,0,.55)}
 .hidden{display:none!important}
+::-webkit-scrollbar{width:8px}::-webkit-scrollbar-thumb{background:rgba(51,65,85,.6);border-radius:4px}
 </style>
 </head>
 <body>
 
 <div id="gate">
   <div class="card">
-    <h2>🔐 登录 / 注册</h2>
+    <h1 style="text-align:center;font-size:26px;margin-bottom:4px;background:linear-gradient(90deg,#38bdf8,#818cf8);-webkit-background-clip:text;background-clip:text;color:transparent">🌲 greenfir</h1>
+    <p style="text-align:center;color:var(--muted);font-size:13px;margin-bottom:20px">个人控制台</p>
     <div class="tabs">
       <button class="tab-btn active" onclick="switchTab('login')">登录</button>
       <button class="tab-btn" onclick="switchTab('reg')">注册</button>
@@ -80,35 +84,35 @@ button.primary:hover{background:#7dd3fc}
       <button class="tool-btn" onclick="toolCalc()">🧮 计算器</button>
       <button class="tool-btn" onclick="toolPomo()">⏱️ 番茄钟</button>
     </div>
-    <div id="tool-output" style="margin-top:10px;font-size:13px;color:#cbd5e1;min-height:20px"></div>
+    <div id="tool-output" style="margin-top:12px;font-size:13px;color:#cbd5e1;min-height:20px;padding:10px;background:rgba(15,23,42,.5);border-radius:10px"></div>
   </div>
 
   <div class="card">
     <h2>📋 待办</h2>
-    <div style="display:flex;gap:6px;margin-bottom:8px">
+    <div style="display:flex;gap:8px;margin-bottom:10px">
       <input id="todo-input" placeholder="新待办" style="margin-bottom:0">
-      <button class="primary" style="width:auto;padding:8px 12px" onclick="addTodo()">添加</button>
+      <button class="primary" style="width:auto;padding:10px 16px" onclick="addTodo()">添加</button>
     </div>
     <div id="todo-list"></div>
   </div>
 
   <div class="card">
     <h2>🔗 导航</h2>
-    <p style="font-size:12px;color:#94a3b8;margin-bottom:8px">常用</p>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:10px;text-transform:uppercase">常用</p>
     <div class="nav-grid">
       <a class="nav-btn" href="https://chat.openai.com" target="_blank">ChatGPT</a>
       <a class="nav-btn" href="https://claude.ai" target="_blank">Claude</a>
       <a class="nav-btn" href="https://github.com" target="_blank">GitHub</a>
       <a class="nav-btn" href="https://youtube.com" target="_blank">YouTube</a>
     </div>
-    <p style="font-size:12px;color:#94a3b8;margin:10px 0 4px">小游戏</p>
+    <p style="font-size:11px;color:var(--muted);margin:12px 0 6px;text-transform:uppercase">小游戏</p>
     <div class="nav-grid">
       <a class="nav-btn" href="https://eaglercraft.com" target="_blank">Eaglercraft</a>
       <a class="nav-btn" href="https://krunker.io" target="_blank">Krunker</a>
       <a class="nav-btn" href="https://agar.io" target="_blank">Agar.io</a>
       <a class="nav-btn" href="https://slither.io" target="_blank">Slither.io</a>
     </div>
-    <p style="font-size:12px;color:#94a3b8;margin:10px 0 4px">我的世界</p>
+    <p style="font-size:11px;color:var(--muted);margin:12px 0 6px;text-transform:uppercase">我的世界</p>
     <div class="nav-grid">
       <a class="nav-btn" href="https://www.mcmod.cn" target="_blank">MC百科</a>
       <a class="nav-btn" href="https://www.chunkbase.com" target="_blank">Chunk Base</a>
@@ -161,9 +165,10 @@ async function doLogin(){
 }
 
 function logout(){
+  const u=username;
   token='';username='';
   localStorage.removeItem('token');localStorage.removeItem('user');
-  localStorage.removeItem('todos_'+username);
+  localStorage.removeItem('todos_'+u);
   location.reload();
 }
 
@@ -184,7 +189,7 @@ function loadTodos(){
   const list=document.getElementById('todo-list');
   const key='todos_'+username;
   const todos=JSON.parse(localStorage.getItem(key)||'[]');
-  list.innerHTML=todos.map((t,i)=>'<div class="todo-item '+(t.done?'done':'')+'"><input type="checkbox" '+(t.done?'checked':'')+' onchange="toggleTodo('+i+')"><span>'+t.text+'</span><button onclick="delTodo('+i+')" style="margin-left:auto;font-size:12px;background:none;border:none;color:#ef4444;cursor:pointer">✕</button></div>').join('');
+  list.innerHTML=todos.length?todos.map((t,i)=>'<div class="todo-item '+(t.done?'done':'')+'"><input type="checkbox" '+(t.done?'checked':'')+' onchange="toggleTodo('+i+')"><span style="flex:1">'+t.text+'</span><button onclick="delTodo('+i+')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:14px">✕</button></div>').join(''):'<p style="color:#64748b;font-size:13px">暂无待办</p>';
 }
 function addTodo(){
   const input=document.getElementById('todo-input');const text=input.value.trim();
@@ -205,40 +210,29 @@ function delTodo(i){
   todos.splice(i,1);localStorage.setItem(key,JSON.stringify(todos));loadTodos();
 }
 
-// 工具函数
 async function toolWeather(){
   const o=document.getElementById('tool-output');o.textContent='获取中...';
   try{
     const geo=await fetch('https://geocoding-api.open-meteo.com/v1/search?count=1&name='+encodeURIComponent('Beijing')).then(r=>r.json());
     if(!geo.results)return o.textContent='定位失败';
     const w=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+geo.results[0].latitude+'&longitude='+geo.results[0].longitude+'&current_weather=true').then(r=>r.json());
-    o.textContent='🌤️ '+geo.results[0].name+' | 温度: '+w.current_weather.temperature+'°C | 风速: '+w.current_weather.windspeed+'km/h';
+    o.textContent='🌤️ '+geo.results[0].name+' | '+w.current_weather.temperature+'°C | 风 '+w.current_weather.windspeed+'km/h';
   }catch(e){o.textContent='天气获取失败';}
 }
-function toolQuote(){
-  const o=document.getElementById('tool-output');
-  fetch('https://v1.hitokoto.cn/?encode=json').then(r=>r.json()).then(j=>o.textContent='💬 '+j.hitokoto).catch(()=>o.textContent='获取失败');
-}
+function toolQuote(){const o=document.getElementById('tool-output');fetch('https://v1.hitokoto.cn/?encode=json').then(r=>r.json()).then(j=>o.textContent='💬 '+j.hitokoto).catch(()=>o.textContent='获取失败');}
 function toolMC(){
   const seed=prompt('输入MC种子（数字或字符串）：');if(!seed)return;
   let h=0;for(let i=0;i<seed.length;i++){h=(h<<5)-h+seed.charCodeAt(i);h|=0;}
-  document.getElementById('tool-output').textContent='🧱 种子哈希值: '+h+'（Java版MurmurHash2）';
+  document.getElementById('tool-output').textContent='🧱 种子哈希值: '+h;
 }
 function toolPass(){
   const len=parseInt(prompt('密码长度（默认16）：','16'))||16;
   const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
   let p='';for(let i=0;i<len;i++) p+=chars[Math.floor(Math.random()*chars.length)];
-  document.getElementById('tool-output').innerHTML='🔑 <code style="background:#1e293b;padding:2px 6px;border-radius:4px">'+p+'</code> <button onclick="navigator.clipboard.writeText(\''+p+'\')" style="font-size:12px;padding:2px 6px;border-radius:4px;border:1px solid #334155;background:#1e293b;color:#e2e8f0;cursor:pointer">复制</button>';
+  document.getElementById('tool-output').innerHTML='🔑 <code style="background:rgba(30,41,59,.8);padding:3px 8px;border-radius:6px">'+p+'</code> <button onclick="navigator.clipboard.writeText(\''+p+'\')" style="font-size:12px;padding:3px 8px;border-radius:6px;border:1px solid var(--border);background:rgba(30,41,59,.6);color:var(--text);cursor:pointer;margin-left:6px">复制</button>';
 }
-function toolBase64(){
-  const s=prompt('输入要编码的文本：');if(s===null)return;
-  document.getElementById('tool-output').textContent='📦 '+btoa(unescape(encodeURIComponent(s)));
-}
-function toolColor(){
-  const c=document.createElement('input');c.type='color';c.value='#38bdf8';
-  c.oninput=()=>document.getElementById('tool-output').textContent='🎨 '+c.value;
-  c.click();
-}
+function toolBase64(){const s=prompt('输入要编码的文本：');if(s===null)return;document.getElementById('tool-output').textContent='📦 '+btoa(unescape(encodeURIComponent(s)));}
+function toolColor(){const c=document.createElement('input');c.type='color';c.value='#38bdf8';c.oninput=()=>document.getElementById('tool-output').textContent='🎨 '+c.value;c.click();}
 function toolCalc(){
   const expr=prompt('输入算式（如 12*34+5）：');if(!expr)return;
   try{document.getElementById('tool-output').textContent='🧮 = '+Function('"use strict";return ('+expr+')')();}
