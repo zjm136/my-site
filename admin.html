@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>greenfir · 管理后台</title>
+<title>greenfir · 存储管理</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#0b1120;--card:rgba(17,24,39,0.82);--border:rgba(51,65,85,0.55);--text:#e2e8f0;--muted:#94a3b8;--accent:#38bdf8;--accent2:#818cf8}
@@ -12,100 +12,101 @@ header{position:sticky;top:0;z-index:10;backdrop-filter:blur(10px);background:rg
 header h1{font-size:19px;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
 header button{font:inherit;font-size:13px;padding:7px 14px;border-radius:10px;border:1px solid var(--border);background:rgba(30,41,59,.6);color:var(--text);cursor:pointer;transition:.2s}
 header button:hover{background:rgba(56,189,248,.18);border-color:var(--accent)}
-main{max-width:1000px;margin:0 auto}
+main{max-width:900px;margin:0 auto}
 .card{background:var(--card);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:18px;padding:20px;margin-bottom:18px;box-shadow:0 10px 34px rgba(0,0,0,.28)}
 .card h2{font-size:13px;margin-bottom:14px;color:var(--accent);letter-spacing:.6px;text-transform:uppercase}
 input{font:inherit;font-size:14px;width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:rgba(15,23,42,.7);color:var(--text);margin-bottom:10px;transition:.2s}
 input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(56,189,248,.15)}
-button{font:inherit;font-size:14px;padding:10px 16px;border-radius:10px;border:none;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#0b1220;font-weight:700;cursor:pointer;transition:.2s}
-button:hover{filter:brightness(1.08)}
-button.danger{background:transparent;color:#ef4444;border:1px solid #ef4444;font-weight:600}
-button.danger:hover{background:rgba(239,68,68,.12)}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th,td{text-align:left;padding:10px 8px;border-bottom:1px solid rgba(51,65,85,.4)}
-th{color:var(--muted);font-weight:500;font-size:12px;text-transform:uppercase}
+button.primary{font:inherit;font-size:14px;padding:10px 16px;border-radius:10px;border:none;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#0b1220;font-weight:700;cursor:pointer;transition:.2s}
+button.primary:hover{filter:brightness(1.08)}
+button.danger{background:transparent;color:#ef4444;border:1px solid #ef4444;font:inherit;font-size:13px;padding:6px 12px;border-radius:8px;cursor:pointer}
+button.small{font:inherit;font-size:13px;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:rgba(30,41,59,.6);color:var(--text);cursor:pointer}
 .muted{color:var(--muted);font-size:13px}
 .msg{font-size:13px;margin-top:8px;padding:8px 10px;border-radius:8px}
 .msg.ok{background:rgba(5,46,22,.6);color:#4ade80}
 .msg.err{background:rgba(69,10,10,.6);color:#f87171}
-#gate{position:fixed;inset:0;background:radial-gradient(1200px 600px at 50% 0%,rgba(129,140,248,.18),transparent),var(--bg);display:flex;align-items:center;justify-content:center;z-index:100;padding:16px}
-#gate .card{width:100%;max-width:400px;box-shadow:0 24px 70px rgba(0,0,0,.55)}
-#app{display:none}
-#app:not(.hidden){display:block}
+.repo{border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px}
+.repo .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.repo .name{font-weight:700}
+.repo .tag{font-size:11px;padding:2px 8px;border-radius:6px;background:rgba(56,189,248,.15);color:var(--accent)}
+.bar{height:8px;background:rgba(51,65,85,.5);border-radius:4px;overflow:hidden;margin:8px 0}
+.bar>div{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2)}
 .hidden{display:none!important}
 </style>
 </head>
 <body>
 
-<div id="gate">
-  <div class="card">
-    <h1 style="text-align:center;font-size:24px;margin-bottom:4px;background:linear-gradient(90deg,#38bdf8,#818cf8);-webkit-background-clip:text;background-clip:text;color:transparent">🛠️ 管理后台</h1>
-    <p style="text-align:center;color:var(--muted);font-size:13px;margin-bottom:20px">仅管理员可进入</p>
-    <input id="u" placeholder="管理员账号（admin）">
-    <input id="p" type="password" placeholder="密码">
-    <button onclick="adminLogin()">进入后台</button>
-    <div id="msg"></div>
-  </div>
-</div>
+<header>
+  <h1>💾 存储盘管理</h1>
+  <button onclick="logout()">退出</button>
+</header>
 
-<div id="app">
-  <header>
-    <h1>🛠️ greenfir 管理后台</h1>
-    <button onclick="logout()">退出</button>
-  </header>
-  <main>
-    <div class="card">
-      <h2>👥 注册用户</h2>
-      <table><thead><tr><th>账号</th><th>创建时间</th><th>操作</th></tr></thead><tbody id="users"></tbody></table>
-    </div>
-    <div class="card">
-      <h2>📊 全站用量</h2>
-      <div id="usage" class="muted">加载中…</div>
-    </div>
-  </main>
-</div>
+<main>
+  <div class="card">
+    <h2>➕ 添加新盘（远程建仓）</h2>
+    <input id="repo-name" placeholder="仓库名（英文，如 pan3）">
+    <input id="repo-label" placeholder="显示名（如 第三个账户）">
+    <button class="primary" onclick="createRepo()">创建私有仓</button>
+    <div id="create-msg"></div>
+  </div>
+
+  <div class="card">
+    <h2>📀 我的盘（单仓上限 1GB）</h2>
+    <div id="repos">加载中...</div>
+  </div>
+</main>
 
 <script>
 const API='';
 let token='';
-function msg(t,ok){const e=document.getElementById('msg');e.textContent=t;e.className='msg '+(ok?'ok':'err');}
 
-async function adminLogin(){
-  const u=document.getElementById('u').value.trim(),p=document.getElementById('p').value;
-  const r=await fetch(API+'/api/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({username:u,password:p})});
-  const j=await r.json();
-  if(!j.ok){msg(j.msg||'验证失败',false);return;}
-  token=j.token;
-  const w=await fetch(API+'/api/whoami',{headers:{authorization:'Bearer '+token}}).then(r=>r.json());
-  if(!w.ok||w.username!=='admin'){msg('非管理员账号',false);return;}
-  document.getElementById('gate').classList.add('hidden');
-  document.getElementById('app').classList.remove('hidden');
-  loadUsers();
+async function init(){
+  // 从 localStorage 拿 admin token（admin.html 和 index 共享登录态）
+  token=localStorage.getItem('token');
+  if(!token){location.href='/admin-login.html';return;}
+  loadRepos();
 }
-function logout(){token='';document.getElementById('gate').classList.remove('hidden');document.getElementById('app').classList.add('hidden');}
+function msg(el,t,ok){const e=document.getElementById(el);e.textContent=t;e.className='msg '+(ok?'ok':'err');}
 
-async function loadUsers(){
-  const tb=document.getElementById('users');tb.innerHTML='<tr><td colspan="3" class="muted">加载中…</td></tr>';
-  const r=await fetch(API+'/api/admin-users',{headers:{authorization:'Bearer '+token}});
-  const j=await r.json();
-  if(!j.ok){tb.innerHTML='<tr><td colspan="3" class="muted">'+(j.msg||'加载失败')+'</td></tr>';return;}
-  if(!j.users.length){tb.innerHTML='<tr><td colspan="3" class="muted">暂无用户</td></tr>';return;}
-  tb.innerHTML=j.users.map(x=>'<tr><td>'+x.username+(x.isAdmin?' 👑':'')+'</td><td class="muted">'+(x.created?new Date(x.created).toLocaleString('zh-CN'):'-')+'</td><td><button class="danger" onclick="delUser(\''+x.username+'\')">删除</button></td></tr>').join('');
-  document.getElementById('usage').innerHTML=j.users.map(x=>x.username+'：已用 '+((x.usedBytes||0)/1024).toFixed(1)+' KB').join('<br>')||'无数据';
+async function createRepo(){
+  const name=document.getElementById('repo-name').value.trim();
+  const label=document.getElementById('repo-label').value.trim();
+  if(!name) return msg('create-msg','请填仓库名',false);
+  const r=await fetch(API+'/api/admin-create-repo',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+token},body:JSON.stringify({name,label})});
+  const j=await r.json(); msg('create-msg',j.msg||(j.ok?'已创建':'失败'),j.ok);
+  if(j.ok){document.getElementById('repo-name').value='';document.getElementById('repo-label').value='';loadRepos();}
 }
-async function delUser(name){
-  if(!confirm('删除用户「'+name+'」？将清除其账号、会话及所有关联数据，不可恢复。'))return;
-  const r=await fetch(API+'/api/admin-delete-user',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+token},body:JSON.stringify({username:name})});
+
+async function loadRepos(){
+  const el=document.getElementById('repos');el.innerHTML='加载中...';
+  const r=await fetch(API+'/api/admin-repos',{headers:{authorization:'Bearer '+token}});
   const j=await r.json();
-  msg(j.msg||(j.ok?'已删除':'失败'),j.ok);
-  if(j.ok){
-    for(let i=localStorage.length-1;i>=0;i--){
-      const k=localStorage.key(i);
-      if(k&&k.startsWith('todos_'+name)) localStorage.removeItem(k);
-    }
-    loadUsers();
-  }
+  if(!j.ok){el.innerHTML='<p class="muted">'+(j.msg||'加载失败')+'</p>';return;}
+  if(!j.repos.length){el.innerHTML='<p class="muted">暂无盘，先创建一个</p>';return;}
+  el.innerHTML=j.repos.map(rep=>{
+    const used=rep.usedKB*1024, pct=Math.min(100,used/j.quotaBytes*100);
+    return '<div class="repo"><div class="top"><span class="name">📀 '+rep.label+' <span class="tag">'+(rep.is_default?'默认':'')+'</span></span></div>'+
+      '<div class="muted" style="font-size:12px">'+rep.name+' · 已用 '+(used/1024/1024).toFixed(1)+' MB / 1024 MB</div>'+
+      '<div class="bar"><div style="width:'+pct+'%"></div></div>'+
+      '<div style="display:flex;gap:8px;margin-top:8px">'+
+      (!rep.is_default?'<button class="small" onclick="setDefault(\''+rep.name+'\')">设为默认</button>':'')+
+      '<button class="danger" onclick="deleteRepo(\''+rep.name+'\')">删除此盘</button>'+
+      '</div></div>';
+  }).join('');
 }
+
+async function setDefault(name){
+  const r=await fetch(API+'/api/set-default-repo',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+token},body:JSON.stringify({name})});
+  const j=await r.json();msg('create-msg',j.msg,j.ok);if(j.ok)loadRepos();
+}
+async function deleteRepo(name){
+  if(!confirm('确定删除仓库「'+name+'」？仓内所有文件将一并删除！'))return;
+  const r=await fetch(API+'/api/admin-delete-repo',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+token},body:JSON.stringify({name})});
+  const j=await r.json();msg('create-msg',j.msg,j.ok);if(j.ok)loadRepos();
+}
+function logout(){localStorage.removeItem('token');location.href='/admin-login.html';}
+
+init();
 </script>
 </body>
 </html>
