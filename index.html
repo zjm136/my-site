@@ -99,7 +99,7 @@ select{font:inherit;font-size:14px;padding:8px 10px;border-radius:8px;border:1px
 
   <div class="card">
     <h2>📁 我的文件</h2>
-    <p style="font-size:12px;color:var(--muted);margin-bottom:10px">单文件最大100MB · 自动选剩余最多的盘</p>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:10px">单文件最大100MB · 自动选剩余最多的盘 · 点 ⬇️ 即可下载到本地</p>
     <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
       <span class="muted" style="font-size:12px">目标盘:</span>
       <select id="repo-select" style="flex:1"></select>
@@ -141,16 +141,21 @@ select{font:inherit;font-size:14px;padding:8px 10px;border-radius:8px;border:1px
 const API='';
 let token=localStorage.getItem('token');
 let username=localStorage.getItem('user');
-let fileCache=[]; // 缓存当前盘的文件列表（含 repo）
+let fileCache=[];
 
-function showMsg(el,text,ok){
-  const e=document.getElementById(el);
-  e.textContent=text;e.className='msg '+(ok?'ok':'err');
-}
+function showMsg(el,text,ok){const e=document.getElementById(el);e.textContent=text;e.className='msg '+(ok?'ok':'err');}
 function switchTab(t){
   document.getElementById('login-panel').classList.toggle('hidden',t!=='login');
   document.getElementById('reg-panel').classList.toggle('hidden',t!=='reg');
   document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',(i===0&&t==='login')||(i===1&&t==='reg')));
+}
+// 任意错误转可读字符串（防 [object Object]）
+function errText(j){
+  if(!j) return '未知错误';
+  if(typeof j==='string') return j;
+  if(j.msg) return typeof j.msg==='string'?j.msg:JSON.stringify(j.msg);
+  if(j.error) return typeof j.error==='string'?j.error:(j.error_description||JSON.stringify(j.error));
+  return JSON.stringify(j);
 }
 
 async function doRegister(){
@@ -161,68 +166,39 @@ async function doRegister(){
   showMsg('gate-msg',j.msg,j.ok);
   if(j.ok){document.getElementById('reg-user').value='';document.getElementById('reg-pass').value='';switchTab('login');}
 }
-
 async function doLogin(){
   const u=document.getElementById('login-user').value.trim();
   const p=document.getElementById('login-pass').value;
   const r=await fetch(API+'/api/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({username:u,password:p})});
   const j=await r.json();
-  if(j.ok){
-    token=j.token;username=j.username;
-    localStorage.setItem('token',token);localStorage.setItem('user',username);
-    enterMain();
-  }else showMsg('gate-msg',j.msg,false);
+  if(j.ok){token=j.token;username=j.username;localStorage.setItem('token',token);localStorage.setItem('user',username);enterMain();}
+  else showMsg('gate-msg',j.msg,false);
 }
-
 function logout(){
-  const u=username;
-  token='';username='';
-  localStorage.removeItem('token');localStorage.removeItem('user');
-  localStorage.removeItem('todos_'+u);
+  const u=username;token='';username='';
+  localStorage.removeItem('token');localStorage.removeItem('user');localStorage.removeItem('todos_'+u);
   location.reload();
 }
-
 function enterMain(){
   document.getElementById('gate').classList.add('hidden');
   document.getElementById('main-header').classList.remove('hidden');
   document.getElementById('main').classList.remove('hidden');
-  loadTodos();
-  loadRepos();
-  loadFiles();
+  loadTodos();loadRepos();loadFiles();
 }
-
 if(token&&username){
-  fetch(API+'/api/whoami',{headers:{authorization:'Bearer '+token}}).then(r=>r.json()).then(j=>{
-    if(j.ok) enterMain(); else {localStorage.clear();}
-  }).catch(()=>localStorage.clear());
+  fetch(API+'/api/whoami',{headers:{authorization:'Bearer '+token}}).then(r=>r.json()).then(j=>{if(j.ok)enterMain();else localStorage.clear();}).catch(()=>localStorage.clear());
 }
 
 function loadTodos(){
-  const list=document.getElementById('todo-list');
-  const key='todos_'+username;
+  const list=document.getElementById('todo-list');const key='todos_'+username;
   const todos=JSON.parse(localStorage.getItem(key)||'[]');
   list.innerHTML=todos.length?todos.map((t,i)=>'<div class="todo-item '+(t.done?'done':'')+'"><input type="checkbox" '+(t.done?'checked':'')+' onchange="toggleTodo('+i+')"><span style="flex:1">'+t.text+'</span><button onclick="delTodo('+i+')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:14px">✕</button></div>').join(''):'<p style="color:#64748b;font-size:13px">暂无待办</p>';
 }
-function addTodo(){
-  const input=document.getElementById('todo-input');const text=input.value.trim();
-  if(!text) return;
-  const key='todos_'+username;
-  const todos=JSON.parse(localStorage.getItem(key)||'[]');
-  todos.push({text,done:false});localStorage.setItem(key,JSON.stringify(todos));
-  input.value='';loadTodos();
-}
-function toggleTodo(i){
-  const key='todos_'+username;
-  const todos=JSON.parse(localStorage.getItem(key)||'[]');
-  todos[i].done=!todos[i].done;localStorage.setItem(key,JSON.stringify(todos));loadTodos();
-}
-function delTodo(i){
-  const key='todos_'+username;
-  const todos=JSON.parse(localStorage.getItem(key)||'[]');
-  todos.splice(i,1);localStorage.setItem(key,JSON.stringify(todos));loadTodos();
-}
+function addTodo(){const input=document.getElementById('todo-input');const text=input.value.trim();if(!text)return;const key='todos_'+username;const todos=JSON.parse(localStorage.getItem(key)||'[]');todos.push({text,done:false});localStorage.setItem(key,JSON.stringify(todos));input.value='';loadTodos();}
+function toggleTodo(i){const key='todos_'+username;const todos=JSON.parse(localStorage.getItem(key)||'[]');todos[i].done=!todos[i].done;localStorage.setItem(key,JSON.stringify(todos));loadTodos();}
+function delTodo(i){const key='todos_'+username;const todos=JSON.parse(localStorage.getItem(key)||'[]');todos.splice(i,1);localStorage.setItem(key,JSON.stringify(todos));loadTodos();}
 
-// ===== 文件功能（盘选择 + 上传 + 列表 + 删除）=====
+// ===== 文件：盘 + 上传 + 列表 + 下载 + 删除（完整）=====
 async function loadRepos(){
   const sel=document.getElementById('repo-select');if(!sel)return;
   try{const r=await fetch('/api/admin-repos',{headers:{authorization:'Bearer '+token}});const j=await r.json();
@@ -230,74 +206,54 @@ async function loadRepos(){
     sel.innerHTML=j.repos.map(rep=>'<option value="'+rep.name+'">📀 '+rep.label+(rep.is_default?'（默认）':'')+'</option>').join('');}catch(e){sel.innerHTML='<option value="">加载失败</option>';}
 }
 async function doUpload(){
-  const input=document.getElementById('file-input');
-  if(!input.files.length) return alert('请选择文件');
+  const input=document.getElementById('file-input');if(!input.files.length)return alert('请选择文件');
   const fd=new FormData();fd.append('file',input.files[0]);
   const msg=document.getElementById('upload-msg');msg.style.display='block';msg.className='msg';msg.textContent='上传中...';
-  try{
-    const r=await fetch('/api/upload',{method:'POST',headers:{authorization:'Bearer '+token},body:fd});
-    const j=await r.json();msg.textContent=j.ok?'✅ '+j.name:(j.msg||'上传失败');msg.className='msg '+(j.ok?'ok':'err');
-    if(j.ok){input.value='';loadFiles();}
-  }catch(e){msg.textContent='上传异常';msg.className='msg err';}
+  try{const r=await fetch('/api/upload',{method:'POST',headers:{authorization:'Bearer '+token},body:fd});const j=await r.json();
+    msg.textContent=j.ok?'✅ '+j.name:errText(j);msg.className='msg '+(j.ok?'ok':'err');
+    if(j.ok){input.value='';loadFiles();}}catch(e){msg.textContent='上传异常';msg.className='msg err';}
 }
 async function loadFiles(){
   const el=document.getElementById('file-list');if(!el)return;
   const repo=document.getElementById('repo-select')?.value;el.innerHTML='<p class="muted">加载中...</p>';
   try{const url='/api/files'+(repo?'?repo='+repo:'');const r=await fetch(url,{headers:{authorization:'Bearer '+token}});const j=await r.json();
-    if(!j.ok){el.innerHTML='<p class="muted">'+(j.msg||'加载失败')+'</p>';return;}
+    if(!j.ok){el.innerHTML='<p class="muted">'+errText(j)+'</p>';return;}
     fileCache=j.items||[];
     if(!fileCache.length){el.innerHTML='<p class="muted">暂无文件</p>';return;}
-    el.innerHTML=fileCache.map(it=>'<div class="todo-item"><a href="'+it.url+'" target="_blank" style="color:var(--accent);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📄 '+it.name+'</a><button onclick="delFile(\''+it.path+'\')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:14px">✕</button></div>').join('');
-  }catch(e){el.innerHTML='<p class="muted">加载失败</p>';}
+    el.innerHTML=fileCache.map((it,i)=>
+      '<div class="todo-item">'+
+        '<a href="'+it.url+'" download="'+it.name+'" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">📄 '+it.name+'</a>'+
+        '<button onclick="downloadFile('+i+')" title="下载到本地" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:15px">⬇️</button>'+
+        '<button onclick="delFile(\''+it.path+'\')" title="删除" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:15px">✕</button>'+
+      '</div>'
+    ).join('');}catch(e){el.innerHTML='<p class="muted">加载失败</p>';}
+}
+// 强制本地下载（blob 方式，绕过浏览器"直接打开"）
+function downloadFile(i){
+  const it=fileCache[i];if(!it)return;
+  fetch(it.url,{headers:{authorization:'Bearer '+token}}).then(r=>r.blob()).then(blob=>{
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=it.name;
+    document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(a.href);
+  }).catch(()=>{window.open(it.url,'_blank','noopener');});
 }
 async function delFile(path){
   if(!confirm('删除这个文件？'))return;
   const it=fileCache.find(x=>x.path===path)||{};
   const r=await fetch('/api/delete',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+token},body:JSON.stringify({path,repo:it.repo||document.getElementById('repo-select').value})});
-  const j=await r.json();alert(j.msg||(j.ok?'已删除':'失败'));if(j.ok)loadFiles();
+  const j=await r.json();alert(j.ok?'✅ 已删除':errText(j));if(j.ok)loadFiles();
 }
-// 切换盘时重新列文件
 document.getElementById('repo-select')?.addEventListener('change',loadFiles);
 
 // ===== 工具函数 =====
-async function toolWeather(){
-  const o=document.getElementById('tool-output');o.textContent='获取中...';
-  try{
-    const geo=await fetch('https://geocoding-api.open-meteo.com/v1/search?count=1&name='+encodeURIComponent('Beijing')).then(r=>r.json());
-    if(!geo.results)return o.textContent='定位失败';
-    const w=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+geo.results[0].latitude+'&longitude='+geo.results[0].longitude+'&current_weather=true').then(r=>r.json());
-    o.textContent='🌤️ '+geo.results[0].name+' | '+w.current_weather.temperature+'°C | 风 '+w.current_weather.windspeed+'km/h';
-  }catch(e){o.textContent='天气获取失败';}
-}
+async function toolWeather(){const o=document.getElementById('tool-output');o.textContent='获取中...';try{const geo=await fetch('https://geocoding-api.open-meteo.com/v1/search?count=1&name='+encodeURIComponent('Beijing')).then(r=>r.json());if(!geo.results)return o.textContent='定位失败';const w=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+geo.results[0].latitude+'&longitude='+geo.results[0].longitude+'&current_weather=true').then(r=>r.json());o.textContent='🌤️ '+geo.results[0].name+' | '+w.current_weather.temperature+'°C | 风 '+w.current_weather.windspeed+'km/h';}catch(e){o.textContent='天气获取失败';}}
 function toolQuote(){const o=document.getElementById('tool-output');fetch('https://v1.hitokoto.cn/?encode=json').then(r=>r.json()).then(j=>o.textContent='💬 '+j.hitokoto).catch(()=>o.textContent='获取失败');}
-function toolMC(){
-  const seed=prompt('输入MC种子（数字或字符串）：');if(!seed)return;
-  let h=0;for(let i=0;i<seed.length;i++){h=(h<<5)-h+seed.charCodeAt(i);h|=0;}
-  document.getElementById('tool-output').textContent='🧱 种子哈希值: '+h;
-}
-function toolPass(){
-  let len=parseInt(prompt('密码长度（默认16，最大128）：','16'))||16;
-  if(len>128){alert('为防浏览器卡死，已自动限制为128位');len=128;}
-  if(len<1)len=16;
-  const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
-  const buf=new Uint8Array(len);crypto.getRandomValues(buf);
-  let p='';for(let i=0;i<len;i++) p+=chars[buf[i]%chars.length];
-  document.getElementById('tool-output').innerHTML='🔑 <code style="background:rgba(30,41,59,.8);padding:3px 8px;border-radius:6px">'+p+'</code> <button onclick="navigator.clipboard.writeText(\''+p+'\')" style="font-size:12px;padding:3px 8px;border-radius:6px;border:1px solid var(--border);background:rgba(30,41,59,.6);color:var(--text);cursor:pointer;margin-left:6px">复制</button>';
-}
+function toolMC(){const seed=prompt('输入MC种子（数字或字符串）：');if(!seed)return;let h=0;for(let i=0;i<seed.length;i++){h=(h<<5)-h+seed.charCodeAt(i);h|=0;}document.getElementById('tool-output').textContent='🧱 种子哈希值: '+h;}
+function toolPass(){let len=parseInt(prompt('密码长度（默认16，最大128）：','16'))||16;if(len>128){alert('已自动限制为128位');len=128;}if(len<1)len=16;const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';const buf=new Uint8Array(len);crypto.getRandomValues(buf);let p='';for(let i=0;i<len;i++)p+=chars[buf[i]%chars.length];document.getElementById('tool-output').innerHTML='🔑 <code style="background:rgba(30,41,59,.8);padding:3px 8px;border-radius:6px">'+p+'</code> <button onclick="navigator.clipboard.writeText(\''+p+'\')" style="font-size:12px;padding:3px 8px;border-radius:6px;border:1px solid var(--border);background:rgba(30,41,59,.6);color:var(--text);cursor:pointer;margin-left:6px">复制</button>';}
 function toolBase64(){const s=prompt('输入要编码的文本：');if(s===null)return;document.getElementById('tool-output').textContent='📦 '+btoa(unescape(encodeURIComponent(s)));}
 function toolColor(){const c=document.createElement('input');c.type='color';c.value='#38bdf8';c.oninput=()=>document.getElementById('tool-output').textContent='🎨 '+c.value;c.click();}
-function toolCalc(){
-  const expr=prompt('输入算式（如 12*34+5）：');if(!expr)return;
-  try{document.getElementById('tool-output').textContent='🧮 = '+Function('"use strict";return ('+expr+')')();}
-  catch(e){document.getElementById('tool-output').textContent='计算错误';}
-}
+function toolCalc(){const expr=prompt('输入算式（如 12*34+5）：');if(!expr)return;try{document.getElementById('tool-output').textContent='🧮 = '+Function('"use strict";return ('+expr+')')();}catch(e){document.getElementById('tool-output').textContent='计算错误';}}
 let pomoTimer=null,pomoLeft=1500;
-function toolPomo(){
-  const o=document.getElementById('tool-output');
-  if(pomoTimer){clearInterval(pomoTimer);pomoTimer=null;o.textContent='⏱️ 已停止';return;}
-  pomoLeft=1500;o.textContent='⏱️ 25:00';
-  pomoTimer=setInterval(()=>{pomoLeft--;if(pomoLeft<0){clearInterval(pomoTimer);pomoTimer=null;o.textContent='⏱️ 时间到！';return;}o.textContent='⏱️ '+String(Math.floor(pomoLeft/60)).padStart(2,'0')+':'+String(pomoLeft%60).padStart(2,'0');},1000);
-}
+function toolPomo(){const o=document.getElementById('tool-output');if(pomoTimer){clearInterval(pomoTimer);pomoTimer=null;o.textContent='⏱️ 已停止';return;}pomoLeft=1500;o.textContent='⏱️ 25:00';pomoTimer=setInterval(()=>{pomoLeft--;if(pomoLeft<0){clearInterval(pomoTimer);pomoTimer=null;o.textContent='⏱️ 时间到！';return;}o.textContent='⏱️ '+String(Math.floor(pomoLeft/60)).padStart(2,'0')+':'+String(pomoLeft%60).padStart(2,'0');},1000);}
 </script>
 </body>
 </html>
