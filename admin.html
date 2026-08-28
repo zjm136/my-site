@@ -26,11 +26,10 @@ button.small{font:inherit;font-size:13px;padding:6px 12px;border-radius:8px;bord
 .msg.ok{background:rgba(5,46,22,.6);color:#4ade80}
 .msg.err{background:rgba(69,10,10,.6);color:#f87171}
 .repo{border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px}
-.repo .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .repo .name{font-weight:700}
 .repo .tag{font-size:11px;padding:2px 8px;border-radius:6px;background:rgba(56,189,248,.15);color:var(--accent)}
 .bar{height:8px;background:rgba(51,65,85,.5);border-radius:4px;overflow:hidden;margin:8px 0}
-.bar>div{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2)}
+.bar>div{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2))}
 .hidden{display:none!important}
 </style>
 </head>
@@ -44,8 +43,8 @@ button.small{font:inherit;font-size:13px;padding:6px 12px;border-radius:8px;bord
 <main>
   <div class="card">
     <h2>➕ 添加新盘（远程建仓）</h2>
-    <input id="repo-name" placeholder="仓库名（英文，如 pan3）">
-    <input id="repo-label" placeholder="显示名（如 第三个账户）">
+    <input id="repo-name" placeholder="仓库名（英文，如 pan4）">
+    <input id="repo-label" placeholder="显示名（如 第三个盘）">
     <button class="primary" onclick="createRepo()">创建私有仓</button>
     <div id="create-msg"></div>
   </div>
@@ -59,33 +58,32 @@ button.small{font:inherit;font-size:13px;padding:6px 12px;border-radius:8px;bord
 <script>
 const API='';
 let token='';
-
-async function init(){
-  // 从 localStorage 拿 admin token（admin.html 和 index 共享登录态）
-  token=localStorage.getItem('token');
-  if(!token){location.href='/admin-login.html';return;}
-  loadRepos();
-}
 function msg(el,t,ok){const e=document.getElementById(el);e.textContent=t;e.className='msg '+(ok?'ok':'err');}
+// 防 [object Object] 的统一错误解析
+function errText(j){
+  if(!j) return '未知错误';
+  if(typeof j==='string') return j;
+  if(j.msg) return typeof j.msg==='string'?j.msg:JSON.stringify(j.msg);
+  if(j.error) return typeof j.error==='string'?j.error:(j.error_description||JSON.stringify(j.error));
+  return JSON.stringify(j);
+}
+async function init(){token=localStorage.getItem('token');if(!token){location.href='/admin-login.html';return;}loadRepos();}
 
 async function createRepo(){
   const name=document.getElementById('repo-name').value.trim();
   const label=document.getElementById('repo-label').value.trim();
   if(!name) return msg('create-msg','请填仓库名',false);
   const r=await fetch(API+'/api/admin-create-repo',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+token},body:JSON.stringify({name,label})});
-  const j=await r.json(); msg('create-msg',j.msg||(j.ok?'已创建':'失败'),j.ok);
-  if(j.ok){document.getElementById('repo-name').value='';document.getElementById('repo-label').value='';loadRepos();}
+  const j=await r.json();msg('create-msg',j.ok?'✅ 已创建: '+name:errText(j),j.ok);if(j.ok){document.getElementById('repo-name').value='';document.getElementById('repo-label').value='';loadRepos();}
 }
-
 async function loadRepos(){
   const el=document.getElementById('repos');el.innerHTML='加载中...';
-  const r=await fetch(API+'/api/admin-repos',{headers:{authorization:'Bearer '+token}});
-  const j=await r.json();
-  if(!j.ok){el.innerHTML='<p class="muted">'+(j.msg||'加载失败')+'</p>';return;}
+  const r=await fetch(API+'/api/admin-repos',{headers:{authorization:'Bearer '+token}});const j=await r.json();
+  if(!j.ok){el.innerHTML='<p class="muted">'+errText(j)+'</p>';return;}
   if(!j.repos.length){el.innerHTML='<p class="muted">暂无盘，先创建一个</p>';return;}
   el.innerHTML=j.repos.map(rep=>{
     const used=rep.usedKB*1024, pct=Math.min(100,used/j.quotaBytes*100);
-    return '<div class="repo"><div class="top"><span class="name">📀 '+rep.label+' <span class="tag">'+(rep.is_default?'默认':'')+'</span></span></div>'+
+    return '<div class="repo"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span class="name">📀 '+rep.label+' <span class="tag">'+(rep.is_default?'默认':'')+'</span></span></div>'+
       '<div class="muted" style="font-size:12px">'+rep.name+' · 已用 '+(used/1024/1024).toFixed(1)+' MB / 1024 MB</div>'+
       '<div class="bar"><div style="width:'+pct+'%"></div></div>'+
       '<div style="display:flex;gap:8px;margin-top:8px">'+
@@ -94,18 +92,13 @@ async function loadRepos(){
       '</div></div>';
   }).join('');
 }
-
-async function setDefault(name){
-  const r=await fetch(API+'/api/set-default-repo',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+token},body:JSON.stringify({name})});
-  const j=await r.json();msg('create-msg',j.msg,j.ok);if(j.ok)loadRepos();
-}
+async function setDefault(name){const r=await fetch(API+'/api/set-default-repo',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+token},body:JSON.stringify({name})});const j=await r.json();msg('create-msg',j.ok?'✅ 已设 '+name+' 为默认':errText(j),j.ok);if(j.ok)loadRepos();}
 async function deleteRepo(name){
   if(!confirm('确定删除仓库「'+name+'」？仓内所有文件将一并删除！'))return;
   const r=await fetch(API+'/api/admin-delete-repo',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+token},body:JSON.stringify({name})});
-  const j=await r.json();msg('create-msg',j.msg,j.ok);if(j.ok)loadRepos();
+  const j=await r.json();msg('create-msg',j.ok?'✅ 已删除 '+name:errText(j),j.ok);if(j.ok)loadRepos();
 }
 function logout(){localStorage.removeItem('token');location.href='/admin-login.html';}
-
 init();
 </script>
 </body>
