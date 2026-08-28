@@ -35,6 +35,7 @@ button.primary:hover{filter:brightness(1.08);transform:translateY(-1px)}
 .todo-item:last-child{border:none}
 .todo-item input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
 .todo-item.done span{text-decoration:line-through;color:#64748b}
+select{font:inherit;font-size:14px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:rgba(15,23,42,.7);color:var(--text)}
 #gate{position:fixed;inset:0;background:radial-gradient(1200px 600px at 50% 0%,rgba(129,140,248,.18),transparent),var(--bg);display:flex;align-items:center;justify-content:center;z-index:100;padding:16px}
 #gate .card{width:100%;max-width:400px;box-shadow:0 24px 70px rgba(0,0,0,.55)}
 .hidden{display:none!important}
@@ -97,6 +98,19 @@ button.primary:hover{filter:brightness(1.08);transform:translateY(-1px)}
   </div>
 
   <div class="card">
+    <h2>📁 我的文件</h2>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:10px">单文件最大100MB · 自动选剩余最多的盘</p>
+    <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
+      <span class="muted" style="font-size:12px">目标盘:</span>
+      <select id="repo-select" style="flex:1"></select>
+    </div>
+    <input type="file" id="file-input">
+    <button class="primary" onclick="doUpload()">上传</button>
+    <div class="msg" id="upload-msg" style="display:none"></div>
+    <div id="file-list" style="margin-top:12px"></div>
+  </div>
+
+  <div class="card">
     <h2>🔗 导航</h2>
     <p style="font-size:11px;color:var(--muted);margin-bottom:10px;text-transform:uppercase">常用</p>
     <div class="nav-grid">
@@ -121,17 +135,13 @@ button.primary:hover{filter:brightness(1.08);transform:translateY(-1px)}
     </div>
   </div>
 
-  <div class="card hidden">
-    <h2>📁 我的文件</h2>
-    <p style="font-size:12px;color:#64748b">暂未开放（存储后端调整中）</p>
-  </div>
-
 </main>
 
 <script>
 const API='';
 let token=localStorage.getItem('token');
 let username=localStorage.getItem('user');
+let fileCache=[]; // 缓存当前盘的文件列表（含 repo）
 
 function showMsg(el,text,ok){
   const e=document.getElementById(el);
@@ -177,6 +187,8 @@ function enterMain(){
   document.getElementById('main-header').classList.remove('hidden');
   document.getElementById('main').classList.remove('hidden');
   loadTodos();
+  loadRepos();
+  loadFiles();
 }
 
 if(token&&username){
@@ -210,6 +222,44 @@ function delTodo(i){
   todos.splice(i,1);localStorage.setItem(key,JSON.stringify(todos));loadTodos();
 }
 
+// ===== 文件功能（盘选择 + 上传 + 列表 + 删除）=====
+async function loadRepos(){
+  const sel=document.getElementById('repo-select');if(!sel)return;
+  try{const r=await fetch('/api/admin-repos',{headers:{authorization:'Bearer '+token}});const j=await r.json();
+    if(!j.ok||!j.repos.length){sel.innerHTML='<option value="">（暂无盘，请联系管理员）</option>';return;}
+    sel.innerHTML=j.repos.map(rep=>'<option value="'+rep.name+'">📀 '+rep.label+(rep.is_default?'（默认）':'')+'</option>').join('');}catch(e){sel.innerHTML='<option value="">加载失败</option>';}
+}
+async function doUpload(){
+  const input=document.getElementById('file-input');
+  if(!input.files.length) return alert('请选择文件');
+  const fd=new FormData();fd.append('file',input.files[0]);
+  const msg=document.getElementById('upload-msg');msg.style.display='block';msg.className='msg';msg.textContent='上传中...';
+  try{
+    const r=await fetch('/api/upload',{method:'POST',headers:{authorization:'Bearer '+token},body:fd});
+    const j=await r.json();msg.textContent=j.ok?'✅ '+j.name:(j.msg||'上传失败');msg.className='msg '+(j.ok?'ok':'err');
+    if(j.ok){input.value='';loadFiles();}
+  }catch(e){msg.textContent='上传异常';msg.className='msg err';}
+}
+async function loadFiles(){
+  const el=document.getElementById('file-list');if(!el)return;
+  const repo=document.getElementById('repo-select')?.value;el.innerHTML='<p class="muted">加载中...</p>';
+  try{const url='/api/files'+(repo?'?repo='+repo:'');const r=await fetch(url,{headers:{authorization:'Bearer '+token}});const j=await r.json();
+    if(!j.ok){el.innerHTML='<p class="muted">'+(j.msg||'加载失败')+'</p>';return;}
+    fileCache=j.items||[];
+    if(!fileCache.length){el.innerHTML='<p class="muted">暂无文件</p>';return;}
+    el.innerHTML=fileCache.map(it=>'<div class="todo-item"><a href="'+it.url+'" target="_blank" style="color:var(--accent);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📄 '+it.name+'</a><button onclick="delFile(\''+it.path+'\')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:14px">✕</button></div>').join('');
+  }catch(e){el.innerHTML='<p class="muted">加载失败</p>';}
+}
+async function delFile(path){
+  if(!confirm('删除这个文件？'))return;
+  const it=fileCache.find(x=>x.path===path)||{};
+  const r=await fetch('/api/delete',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+token},body:JSON.stringify({path,repo:it.repo||document.getElementById('repo-select').value})});
+  const j=await r.json();alert(j.msg||(j.ok?'已删除':'失败'));if(j.ok)loadFiles();
+}
+// 切换盘时重新列文件
+document.getElementById('repo-select')?.addEventListener('change',loadFiles);
+
+// ===== 工具函数 =====
 async function toolWeather(){
   const o=document.getElementById('tool-output');o.textContent='获取中...';
   try{
@@ -226,9 +276,12 @@ function toolMC(){
   document.getElementById('tool-output').textContent='🧱 种子哈希值: '+h;
 }
 function toolPass(){
-  const len=parseInt(prompt('密码长度（默认16）：','16'))||16;
+  let len=parseInt(prompt('密码长度（默认16，最大128）：','16'))||16;
+  if(len>128){alert('为防浏览器卡死，已自动限制为128位');len=128;}
+  if(len<1)len=16;
   const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
-  let p='';for(let i=0;i<len;i++) p+=chars[Math.floor(Math.random()*chars.length)];
+  const buf=new Uint8Array(len);crypto.getRandomValues(buf);
+  let p='';for(let i=0;i<len;i++) p+=chars[buf[i]%chars.length];
   document.getElementById('tool-output').innerHTML='🔑 <code style="background:rgba(30,41,59,.8);padding:3px 8px;border-radius:6px">'+p+'</code> <button onclick="navigator.clipboard.writeText(\''+p+'\')" style="font-size:12px;padding:3px 8px;border-radius:6px;border:1px solid var(--border);background:rgba(30,41,59,.6);color:var(--text);cursor:pointer;margin-left:6px">复制</button>';
 }
 function toolBase64(){const s=prompt('输入要编码的文本：');if(s===null)return;document.getElementById('tool-output').textContent='📦 '+btoa(unescape(encodeURIComponent(s)));}
