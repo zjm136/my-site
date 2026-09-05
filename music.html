@@ -2,56 +2,72 @@
 <html lang="zh">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>greenfir 音乐</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{--bg:#0e1420;--panel:#141c2e;--card:#1a2438;--border:rgba(255,255,255,.08);--tx:#e6edf5;--mut:#8b97a7;--ac:#22d3ee;--ac2:#818cf8}
 body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;background:var(--bg);color:var(--tx);height:100vh;display:flex;flex-direction:column;overflow:hidden}
-.top{display:flex;align-items:center;gap:10px;padding:12px 16px;background:rgba(20,28,46,.9);border-bottom:1px solid var(--border);backdrop-filter:blur(12px)}
-.logo{font-weight:800;font-size:17px;background:linear-gradient(90deg,var(--ac),var(--ac2));-webkit-background-clip:text;background-clip:text;color:transparent;white-space:nowrap}
-.sbox{flex:1;position:relative}
-.sbox input{width:100%;padding:8px 12px 8px 32px;border-radius:18px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--tx);font:inherit;font-size:14px}
-.sbox input:focus{outline:none;border-color:var(--ac)}
-.sbox::before{content:"🔍";position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px}
-select{padding:7px 8px;border-radius:9px;border:1px solid var(--border);background:var(--card);color:var(--tx);font:inherit;font-size:12px;max-width:110px}
-.main{flex:1;overflow-y:auto;padding:12px 16px 120px}
-.hint{text-align:center;color:var(--mut);font-size:13px;padding:40px 20px;line-height:1.8}
-.song{display:flex;align-items:center;gap:12px;padding:10px;border-radius:12px;cursor:pointer;transition:.15s}
-.song:hover{background:rgba(255,255,255,.05)}
-.song.playing{background:linear-gradient(90deg,rgba(34,211,238,.15),rgba(129,140,248,.12))}
+.top{flex-shrink:0;padding:10px 12px;background:rgba(20,28,46,.9);border-bottom:1px solid var(--border);backdrop-filter:blur(12px)}
+.r1{display:flex;align-items:center;gap:8px}
+.logo{font-weight:800;font-size:16px;background:linear-gradient(90deg,var(--ac),var(--ac2));-webkit-background-clip:text;background-clip:text;color:transparent;white-space:nowrap;flex-shrink:0}
+.logo .txt{margin-left:2px}
+@media(max-width:420px){.logo .txt{display:none}}
+.sbox{flex:1;position:relative;display:flex;align-items:center;min-width:0}
+.sbox::before{content:"🔍";position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;z-index:1}
+.sbox input{flex:1;min-width:0;font-size:16px;padding:9px 10px 9px 32px;border-radius:18px;border:1px solid var(--border);background:rgba(255,255,255,.06);color:var(--tx);font-family:inherit}
+.sbox input:focus{outline:none;border-color:var(--ac);background:rgba(255,255,255,.1)}
+.sbtn{flex-shrink:0;margin-left:6px;padding:9px 14px;border-radius:16px;border:none;background:linear-gradient(90deg,var(--ac),var(--ac2));color:#0b1220;font-weight:800;font-size:13px;cursor:pointer;white-space:nowrap}
+.sbtn:active{transform:scale(.95)}
+.r2{display:flex;gap:8px;margin-top:8px}
+.r2 select{flex:1;min-width:0;padding:8px 8px;border-radius:9px;border:1px solid var(--border);background:var(--card);color:var(--tx);font:inherit;font-size:13px}
+.main{flex:1;overflow-y:auto;padding:12px 14px 150px;-webkit-overflow-scrolling:touch}
+.hint{text-align:center;color:var(--mut);font-size:13px;padding:36px 20px;line-height:1.9}
+.song{display:flex;align-items:center;gap:11px;padding:11px;border-radius:12px;cursor:pointer;transition:.15s}
+.song:active{background:rgba(255,255,255,.08)}
+.song.playing{background:linear-gradient(90deg,rgba(34,211,238,.16),rgba(129,140,248,.12))}
 .song .idx{width:26px;text-align:center;color:var(--mut);font-size:13px;flex-shrink:0}
 .song .info{flex:1;min-width:0}
 .song .t{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.song .s{font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
-.song .src{font-size:10px;padding:2px 6px;border-radius:5px;background:rgba(34,211,238,.15);color:var(--ac);flex-shrink:0}
-.bar{position:fixed;left:0;right:0;bottom:0;background:rgba(20,28,46,.96);border-top:1px solid var(--border);backdrop-filter:blur(12px);padding:10px 16px;display:flex;flex-direction:column;gap:8px}
+.song .s{font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px}
+.song .src{font-size:10px;padding:3px 7px;border-radius:5px;background:rgba(34,211,238,.15);color:var(--ac);flex-shrink:0}
+.bar{position:fixed;left:0;right:0;bottom:0;background:rgba(20,28,46,.97);border-top:1px solid var(--border);backdrop-filter:blur(12px);padding:10px 14px calc(10px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px;z-index:20}
 .barinfo{display:flex;align-items:center;gap:10px}
-.cover{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--ac),var(--ac2));flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;animation:spin 12s linear infinite;animation-play-state:paused}
+.cover{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--ac),var(--ac2));flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:17px;animation:spin 12s linear infinite;animation-play-state:paused}
 .cover.on{animation-play-state:running}
 @keyframes spin{to{transform:rotate(360deg)}}
 .barname{flex:1;min-width:0}
 .barname .t{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.barname .s{font-size:11px;color:var(--mut)}
-.ctl{display:flex;align-items:center;gap:8px;justify-content:center;font-size:20px}
-.ctl button{background:none;border:none;color:var(--tx);cursor:pointer;font-size:19px;padding:2px 6px}
-.ctl button:active{transform:scale(.9)}
+.barname .s{font-size:11px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vol{width:64px;height:3px;accent-color:var(--ac2);cursor:pointer;flex-shrink:0}
 .prog{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--mut)}
-.prog input[type=range]{flex:1;height:3px;accent-color:var(--ac);cursor:pointer}
-.vol{width:70px;height:3px;accent-color:var(--ac2);cursor:pointer}
-.msg{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;padding:8px 16px;border-radius:8px;font-size:13px;z-index:99;display:none}
+.prog input[type=range]{flex:1;height:3px;accent-color:var(--ac);cursor:pointer;min-width:0}
+.ctl{display:flex;align-items:center;justify-content:center;gap:26px}
+.ctl button{background:none;border:none;color:var(--tx);cursor:pointer;font-size:22px;padding:4px 8px}
+.ctl button:active{transform:scale(.88)}
+.msg{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.88);color:#fff;padding:11px 20px;border-radius:10px;font-size:14px;z-index:99;display:none;max-width:80%;text-align:center}
 </style>
 </head>
 <body>
+
 <div class="top">
-  <div class="logo">🎵 greenfir</div>
-  <div class="sbox"><input id="kw" placeholder="搜歌名 / 歌手" onkeydown="if(event.key==='Enter')doSearch()"></div>
-  <select id="source" onchange="onSrcChange()"></select>
-  <select id="level"></select>
+  <div class="r1">
+    <div class="logo">🎵<span class="txt">greenfir</span></div>
+    <form class="sbox" onsubmit="doSearch();return false;">
+      <input id="kw" type="search" placeholder="搜歌名 / 歌手" enterkeyhint="search" autocomplete="off">
+      <button type="submit" class="sbtn">搜索</button>
+    </form>
+  </div>
+  <div class="r2">
+    <select id="source" onchange="onSrcChange()"></select>
+    <select id="level"></select>
+  </div>
 </div>
+
 <div class="main" id="list">
-  <div class="hint">🎧 输入歌名或歌手，回车搜索<br><span style="font-size:12px">音源来自你的 ceshi.json 配置</span></div>
+  <div class="hint">🎧 输入歌名或歌手，点「搜索」<br><span style="font-size:12px">手机键盘按「搜索/前往」键也行</span></div>
 </div>
+
 <div class="bar">
   <div class="barinfo">
     <div class="cover" id="cover">🎵</div>
@@ -65,68 +81,95 @@ select{padding:7px 8px;border-radius:9px;border:1px solid var(--border);backgrou
     <button onclick="next()">⏭</button>
   </div>
 </div>
+
 <div class="msg" id="msg"></div>
 <audio id="audio"></audio>
+
 <script>
 const API='/api/music';
-const DEFAULT_LINES=[{id:'kw',name:'小窝源',levels:['lossless','exhigh','standard']},{id:'kg',name:'小狗源',levels:['lossless','exhigh','standard']},{id:'wy',name:'小云源',levels:['lossless','exhigh','standard']},{id:'tx',name:'小Q源',levels:['lossless','exhigh','standard']},{id:'bili',name:'哔哩哔哩',levels:['bili192']},{id:'mg',name:'小粉源',levels:['standard']}];
-let LINES=DEFAULT_LINES, SONGS=[], cur=-1, audio=document.getElementById('audio');
+const DEFAULT_LINES=[
+  {id:'kw',name:'小窝源',levels:['standard','exhigh','lossless']},
+  {id:'kg',name:'小狗源',levels:['standard','exhigh','lossless']},
+  {id:'wy',name:'小云源',levels:['standard','exhigh','lossless']},
+  {id:'tx',name:'小Q源',levels:['standard','exhigh','lossless']},
+  {id:'bili',name:'哔哩哔哩',levels:['bili192']},
+  {id:'mg',name:'小粉源',levels:['standard']}
+];
+const LVNAME={standard:'标准 128K',exhigh:'极高 192K',lossless:'无损 320K',hires:'Hi-Res',atmos:'Atmos全景声',atmos_plus:'Atmos+全景声',master:'Master母带',sky:'Sky',jyeffect:'臻品音效',jymaster:'臻品母带',clear:'清晰',bili192:'192K'};
+let LINES=DEFAULT_LINES, SONGS=[], cur=-1;
+const audio=document.getElementById('audio');
 const $=id=>document.getElementById(id);
-function toast(t){const m=$('msg');m.textContent=t;m.style.display='block';clearTimeout(m._t);m._t=setTimeout(()=>m.style.display='none',2200);}
 
-// 加载音源配置（优先你的 ceshi.json）
+function toast(t){const m=$('msg');m.textContent=t;m.style.display='block';clearTimeout(m._t);m._t=setTimeout(()=>m.style.display='none',2400);}
+function esc(s){return String(s||'').replace(/[<>"]/g,c=>({'<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
 async function loadCfg(){
   try{
     const r=await fetch(API+'?action=config').then(x=>x.json());
-    if(r.ok&&r.lines&&r.lines.length){LINES=r.lines;toast('已加载 '+r.lines.length+' 个音源');}
+    if(r.ok&&r.lines&&r.lines.length){LINES=r.lines;}
   }catch(e){}
   $('source').innerHTML=LINES.map(l=>`<option value="${l.id}">${l.name}</option>`).join('');
   onSrcChange();
 }
 function onSrcChange(){
   const l=LINES.find(x=>x.id===$('source').value)||LINES[0];
-  $('level').innerHTML=(l.levels||['standard']).map(v=>`<option value="${v}">${v}</option>`).join('');
+  const lvs=l.levels&&l.levels.length?l.levels:['standard'];
+  $('level').innerHTML=lvs.map(v=>`<option value="${v}">${LVNAME[v]||v}</option>`).join('');
+  const si=lvs.indexOf('standard');
+  if(si>=0)$('level').selectedIndex=si;
 }
+
 async function doSearch(){
-  const kw=$('kw').value.trim();if(!kw)return;
+  const kw=$('kw').value.trim();
+  if(!kw){toast('请输入歌名或歌手');return;}
   const src=$('source').value;
   $('list').innerHTML='<div class="hint">搜索中...</div>';
+  $('list').scrollTop=0;
   try{
     const j=await fetch(`${API}?action=search&keyword=${encodeURIComponent(kw)}&source=${src}&size=25`).then(x=>x.json());
-    if(!j.ok){$('list').innerHTML=`<div class="hint">❌ ${j.msg||'搜索失败'}</div>`;return;}
-    SONGS=j.list||[];
-    if(!SONGS.length){$('list').innerHTML='<div class="hint">没有找到结果<br><span style="font-size:12px">换个音源试试</span></div>';return;}
+    if(!j.ok){$('list').innerHTML=`<div class="hint">❌ ${esc(j.msg||'搜索失败')}<br><span style="font-size:12px">换小窝源/小狗源试试</span></div>`;return;}
+    SONGS=j.list||[];cur=-1;
+    if(!SONGS.length){$('list').innerHTML='<div class="hint">没有找到结果<br><span style="font-size:12px">换个音源或换个关键词</span></div>';return;}
     render();
-  }catch(e){$('list').innerHTML='<div class="hint">❌ 请求异常</div>';}
+  }catch(e){$('list').innerHTML='<div class="hint">❌ 请求异常，检查网络</div>';}
 }
+
 function render(){
   $('list').innerHTML=SONGS.map((s,i)=>`<div class="song${i===cur?' playing':''}" onclick="play(${i})">
     <div class="idx">${i===cur?'🎵':i+1}</div>
-    <div class="info"><div class="t">${esc(s.name)}</div><div class="s">${esc(s.artist||'未知')} · ${esc(s.album||'')}</div></div>
-    <div class="src">${s.source}</div></div>`).join('');
+    <div class="info"><div class="t">${esc(s.name)}</div><div class="s">${esc(s.artist||'未知歌手')}${s.album?' · '+esc(s.album):''}</div></div>
+    <div class="src">${esc(s.source)}</div></div>`).join('');
 }
-function esc(s){return String(s||'').replace(/[<>"]/g,c=>({'<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 
 async function play(i){
   cur=i;const s=SONGS[i];render();
-  $('bt').textContent=s.name;$('bs').textContent=s.artist||'';toast('获取播放链接...');
+  $('bt').textContent=s.name;$('bs').textContent=s.artist||'';
+  toast('获取播放链接...');
   const lv=$('level').value;
-  const j=await fetch(`${API}?action=url&id=${encodeURIComponent(s.id)}&source=${s.source}&album_id=${encodeURIComponent(s.album_id||'')}`).then(x=>x.json());
-  if(!j.ok){toast('❌ '+(j.msg||'无法播放'));return;}
-  // 走代理播放（解决跨域/防盗链）
-  audio.src=`${API}?action=proxy&url=${encodeURIComponent(j.url)}&source=${s.source}`;
-  audio.play().then(()=>{$('pb').textContent='⏸';$('cover').classList.add('on');}).catch(()=>toast('播放失败，点一下播放键'));
+  try{
+    const j=await fetch(`${API}?action=url&id=${encodeURIComponent(s.id)}&source=${s.source}&level=${encodeURIComponent(lv)}&album_id=${encodeURIComponent(s.album_id||'')}`).then(x=>x.json());
+    if(!j.ok){toast('❌ '+(j.msg||'无法获取播放链接'));return;}
+    audio.src=`${API}?action=proxy&url=${encodeURIComponent(j.url)}&source=${s.source}`;
+    await audio.play();
+  }catch(e){toast('播放失败：'+(e.message||'未知'));}
 }
-function toggle(){if(audio.paused){if(audio.src)audio.play();else if(cur>=0)play(cur);else if(SONGS.length)play(0);}else audio.pause();}
-audio.onplay=()=>{$('pb').textContent='⏸';$('cover').classList.add('on');};
+
+function toggle(){
+  if(audio.paused){if(audio.src&&audio.src!==location.href)audio.play();else if(cur>=0)play(cur);else if(SONGS.length)play(0);}
+  else audio.pause();
+}
+audio.onplay=()=>{$('pb').textContent='⏸';$('cover').classList.add('on');$('msg').style.display='none';};
 audio.onpause=()=>{$('pb').textContent='▶️';$('cover').classList.remove('on');};
 audio.ontimeupdate=()=>{if(!audio.duration)return;$('prog').value=(audio.currentTime/audio.duration*100)||0;$('ct').textContent=fmt(audio.currentTime);$('dt').textContent=fmt(audio.duration);};
 audio.onended=()=>next();
+audio.onerror=()=>toast('音频加载失败，换首歌或换音源');
 function seek(){if(audio.duration)audio.currentTime=audio.duration*($('prog').value/100);}
 function fmt(s){s=Math.floor(s||0);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');}
 function prev(){if(cur>0)play(cur-1);}
 function next(){if(cur<SONGS.length-1)play(cur+1);}
+
 loadCfg();
+audio.volume=0.8;
 </script>
 </body>
 </html>
