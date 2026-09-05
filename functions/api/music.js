@@ -1,5 +1,4 @@
 // 青听风格音乐引擎 — Cloudflare Pages Function
-// action=search(搜索) | url(取直链) | proxy(音频代理) | config(读音源配置)
 const CORS={'content-type':'application/json;charset=utf-8','access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'GET,POST,OPTIONS'};
 function json(b,s=200){return new Response(JSON.stringify(b),{status:s,headers:CORS});}
 export async function onRequestOptions(){return new Response(null,{status:204,headers:CORS});}
@@ -8,7 +7,7 @@ const REF={kw:'https://www.kuwo.cn/',kg:'https://www.kugou.com/',wy:'https://mus
 function strip(s){return String(s||'').replace(/<[^>]+>/g,'').trim();}
 
 /* ---------- 酷我 kw ---------- */
-function kwBr(l){const m={standard:'128kmp3',exhigh:'192kmp3',lossless:'320kmp3',atmos:'320kmp3',atmos_plus:'320kmp3',master:'320kmp3'};return m[l]||'320kmp3';}
+function kwBr(l){const m={standard:'128kmp3',exhigh:'192kmp3',lossless:'320kmp3',atmos:'320kmp3',atmos_plus:'320kmp3',master:'320kmp3'};return m[l]||'128kmp3';}
 async function kwSearch(kw,page,size){
   const u=`https://search.kuwo.cn/r.s?all=${encodeURIComponent(kw)}&ft=music&itemset=web_2013&client=kt&pn=${(page-1)*size}&rn=${size}&rformat=json&encoding=utf8`;
   const r=await fetch(u,{headers:{'User-Agent':UA,'Referer':REF.kw}});
@@ -103,14 +102,12 @@ async function biliUrl(id){
   return null;
 }
 
-/* ---------- 咪咕 mg（需签名，暂返回空） ---------- */
+/* ---------- 咪咕 mg（需签名，预留） ---------- */
 async function mgSearch(){return [];}
 async function mgUrl(){return null;}
 
 const ENGINES={kw:{search:kwSearch,url:kwUrl},kg:{search:kgSearch,url:kgUrl},wy:{search:wySearch,url:wyUrl},tx:{search:txSearch,url:txUrl},bili:{search:biliSearch,url:biliUrl},mg:{search:mgSearch,url:mgUrl}};
-
-/* ---------- 音质候选（按 ceshi.json 的 levels 顺序回退） ---------- */
-const LEVELS={kw:['lossless','exhigh','standard'],kg:['lossless','exhigh','standard'],wy:['lossless','exhigh','standard'],tx:['lossless','exhigh','standard'],bili:['bili192'],mg:['standard']};
+const LEVELS={kw:['standard','exhigh','lossless'],kg:['standard','exhigh','lossless'],wy:['standard','exhigh','lossless'],tx:['standard','exhigh','lossless'],bili:['bili192'],mg:['standard']};
 
 async function handleSearch(url){
   const kw=url.searchParams.get('keyword')||'';
@@ -130,17 +127,20 @@ async function handleUrl(url){
   const id=url.searchParams.get('id');
   const src=url.searchParams.get('source')||'kw';
   const albumId=url.searchParams.get('album_id')||'';
+  const wantLv=url.searchParams.get('level')||'';
   if(!id)return json({ok:false,msg:'缺少id'});
   const eng=ENGINES[src];
   if(!eng)return json({ok:false,msg:'未知音源'});
-  const levels=LEVELS[src]||['standard'];
-  for(const lv of levels){
+  // 你选的音质优先，失败后按该源其它档位回退
+  const base=LEVELS[src]||['standard'];
+  const order=wantLv?[wantLv,...base.filter(l=>l!==wantLv)]:base;
+  for(const lv of order){
     try{
       const u=await eng.url(id,lv,albumId);
       if(u)return json({ok:true,url:u,level:lv,source:src});
     }catch(e){}
   }
-  return json({ok:false,msg:'该音源未能获取播放链接（可能需要会员或接口变动）'});
+  return json({ok:false,msg:'该音源未能获取播放链接（可能需会员或接口变动），换个音源试试'});
 }
 
 async function handleProxy(url,req){
