@@ -6,7 +6,7 @@
 <title>greenfir 音乐</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-:root{--bg:#0e1420;--panel:#141c2e;--card:#1a2438;--border:rgba(255,255,255,.08);--tx:#e6edf5;--mut:#8b97a7;--ac:#22d3ee;--ac2:#818cf8}
+:root{--bg:#0e1420;--card:#1a2438;--border:rgba(255,255,255,.08);--tx:#e6edf5;--mut:#8b97a7;--ac:#22d3ee;--ac2:#818cf8}
 body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;background:var(--bg);color:var(--tx);height:100vh;display:flex;flex-direction:column;overflow:hidden}
 .top{flex-shrink:0;padding:10px 12px;background:rgba(20,28,46,.9);border-bottom:1px solid var(--border);backdrop-filter:blur(12px)}
 .r1{display:flex;align-items:center;gap:8px}
@@ -34,11 +34,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;backg
 .song .s{font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px}
 .song .src{font-size:10px;padding:3px 7px;border-radius:5px;background:rgba(34,211,238,.15);color:var(--ac);flex-shrink:0}
 .diagbox{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;font-size:13px;line-height:1.9}
-.diagbox h3{font-size:13px;color:var(--ac);margin-bottom:8px}
-.drow{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.diagbox h3{font-size:13px;color:var(--ac);margin:10px 0 6px}
+.diagbox h3:first-child{margin-top:0}
+.drow{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05)}
 .drow:last-child{border:none}
-.dok{color:#4ade80}
-.dno{color:#f87171}
+.dok{color:#4ade80;white-space:nowrap}
+.dno{color:#f87171;white-space:nowrap}
 .bar{position:fixed;left:0;right:0;bottom:0;background:rgba(20,28,46,.97);border-top:1px solid var(--border);backdrop-filter:blur(12px);padding:10px 14px calc(10px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px;z-index:20}
 .barinfo{display:flex;align-items:center;gap:10px}
 .cover{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--ac),var(--ac2));flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:17px;animation:spin 12s linear infinite;animation-play-state:paused}
@@ -129,22 +130,24 @@ function onSrcChange(){
   if(si>=0)$('level').selectedIndex=si;
 }
 
-// 自检：看哪个源能搜、能取链
 async function runDiag(){
   const kw=$('kw').value.trim()||'起风了';
-  $('list').innerHTML='<div class="hint">自检中，约需 10-20 秒...</div>';
+  $('list').innerHTML='<div class="hint">自检中，约 15 秒...</div>';
   try{
     const j=await fetch(`${API}?action=test&keyword=${encodeURIComponent(kw)}`).then(x=>x.json());
     if(!j.ok){$('list').innerHTML='<div class="hint">自检失败</div>';return;}
-    const rows=(j.results||[]).map(r=>{
-      const okS=r.search?'<span class="dok">✅'+r.count+'条</span>':'<span class="dno">❌</span>';
-      const okU=r.url?'<span class="dok">✅可播</span>':'<span class="dno">❌</span>';
-      return `<div class="drow"><span>${SRCNAME[r.source]||r.source}</span><span>搜:${okS} 播:${okU}</span></div>`;
-    }).join('');
-    const alive=(j.results||[]).filter(r=>r.url).map(r=>SRCNAME[r.source]||r.source);
-    $('list').innerHTML=`<div class="diagbox"><h3>🔍 自检结果（关键词：${esc(kw)}）</h3>${rows}
-      <div style="margin-top:10px;font-size:12px;color:var(--mut)">
-      ${alive.length?('✅ 当前可用：'+alive.join('、')+'<br>去左上角切到这几个源就能听'):'⚠️ 全部不可用，各平台风控中，稍后再试或换网络'}
+    const agg=j.results.filter(r=>String(r.item).startsWith('聚合源'));
+    const srcs=j.results.filter(r=>r.source);
+    const aggHtml=agg.map(r=>`<div class="drow"><span>${esc(r.item)}</span><span>${r.url?'<span class="dok">✅ 可播</span>':'<span class="dno">❌</span>'} <small style="color:var(--mut)">${esc(r.note||'')}</small></span></div>`).join('');
+    const srcHtml=srcs.map(r=>`<div class="drow"><span>${SRCNAME[r.source]||r.source}</span><span>搜:${r.search?'<span class="dok">✅'+r.count+'条</span>':'<span class="dno">❌</span>'} 播:${r.url?'<span class="dok">✅</span>':'<span class="dno">❌</span>'} <small style="color:var(--mut)">${esc(r.note||'')}</small></span></div>`).join('');
+    const aliveAgg=agg.filter(r=>r.url).map(r=>r.item);
+    const aliveSrc=srcs.filter(r=>r.url).map(r=>SRCNAME[r.source]||r.source);
+    $('list').innerHTML=`<div class="diagbox">
+      <h3>🔗 第三方聚合源（取链用）</h3>${aggHtml||'<div class="hint" style="padding:8px">无</div>'}
+      <h3>🎵 各音源（搜索用）</h3>${srcHtml||'<div class="hint" style="padding:8px">无</div>'}
+      <div style="margin-top:12px;font-size:12px;line-height:1.8">
+        ${aliveAgg.length?'✅ 聚合源可用：'+aliveAgg.join('、'):'⚠️ 聚合源全挂 → 改 AGGREGATORS 数组'}<br>
+        ${aliveSrc.length?'🎵 可听的源：'+aliveSrc.join('、'):''}
       </div></div>`;
   }catch(e){$('list').innerHTML='<div class="hint">自检异常</div>';}
 }
