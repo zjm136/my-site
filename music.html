@@ -11,21 +11,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;backg
 .top{flex-shrink:0;padding:10px 12px;background:rgba(20,28,46,.9);border-bottom:1px solid var(--border);backdrop-filter:blur(12px)}
 .r1{display:flex;align-items:center;gap:8px}
 .logo{font-weight:800;font-size:16px;background:linear-gradient(90deg,var(--ac),var(--ac2));-webkit-background-clip:text;background-clip:text;color:transparent;white-space:nowrap;flex-shrink:0}
-.logo .txt{margin-left:2px}
-@media(max-width:420px){.logo .txt{display:none}}
 .sbox{flex:1;position:relative;display:flex;align-items:center;min-width:0}
 .sbox::before{content:"🔍";position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;z-index:1}
 .sbox input{flex:1;min-width:0;font-size:16px;padding:9px 10px 9px 32px;border-radius:18px;border:1px solid var(--border);background:rgba(255,255,255,.06);color:var(--tx);font-family:inherit}
-.sbox input:focus{outline:none;border-color:var(--ac);background:rgba(255,255,255,.1)}
+.sbox input:focus{outline:none;border-color:var(--ac)}
 .sbtn{flex-shrink:0;margin-left:6px;padding:9px 14px;border-radius:16px;border:none;background:linear-gradient(90deg,var(--ac),var(--ac2));color:#0b1220;font-weight:800;font-size:13px;cursor:pointer;white-space:nowrap}
-.sbtn:active{transform:scale(.95)}
-.r2{display:flex;gap:8px;margin-top:8px}
-.r2 select{flex:1;min-width:0;padding:8px 8px;border-radius:9px;border:1px solid var(--border);background:var(--card);color:var(--tx);font:inherit;font-size:13px}
-.diag{flex-shrink:0;margin-left:6px;padding:8px 10px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--mut);font:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
-.diag:active{transform:scale(.95)}
-.main{flex:1;overflow-y:auto;padding:12px 14px 150px;-webkit-overflow-scrolling:touch}
+.r2{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.r2 select{flex:1;min-width:120px;padding:8px;border-radius:9px;border:1px solid var(--border);background:var(--card);color:var(--tx);font:inherit;font-size:13px}
+.diag{flex-shrink:0;margin-left:auto;padding:8px 10px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--mut);font:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
+.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:6px;margin-left:8px;vertical-align:middle}
+.badge.v1{background:rgba(248,113,113,.2);color:#f87171}
+.badge.v2{background:rgba(74,222,128,.2);color:#4ade80}
+.main{flex:1;overflow-y:auto;padding:12px 14px 150px}
 .hint{text-align:center;color:var(--mut);font-size:13px;padding:36px 20px;line-height:1.9}
-.song{display:flex;align-items:center;gap:11px;padding:11px;border-radius:12px;cursor:pointer;transition:.15s}
+.song{display:flex;align-items:center;gap:11px;padding:11px;border-radius:12px;cursor:pointer}
 .song:active{background:rgba(255,255,255,.08)}
 .song.playing{background:linear-gradient(90deg,rgba(34,211,238,.16),rgba(129,140,248,.12))}
 .song .idx{width:26px;text-align:center;color:var(--mut);font-size:13px;flex-shrink:0}
@@ -35,12 +34,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;backg
 .song .src{font-size:10px;padding:3px 7px;border-radius:5px;background:rgba(34,211,238,.15);color:var(--ac);flex-shrink:0}
 .diagbox{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;font-size:13px;line-height:1.9}
 .diagbox h3{font-size:13px;color:var(--ac);margin:10px 0 6px}
-.diagbox h3:first-child{margin-top:0}
 .drow{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05)}
-.drow:last-child{border:none}
-.dok{color:#4ade80;white-space:nowrap}
-.dno{color:#f87171;white-space:nowrap}
-.bar{position:fixed;left:0;right:0;bottom:0;background:rgba(20,28,46,.97);border-top:1px solid var(--border);backdrop-filter:blur(12px);padding:10px 14px calc(10px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px;z-index:20}
+.drow:last-child{border:none}.dok{color:#4ade80;white-space:nowrap}.dno{color:#f87171;white-space:nowrap}
+.feedback{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:13px}
+.feedback b{color:var(--ac)}
+.bar{position:fixed;left:0;right:0;bottom:0;background:rgba(20,28,46,.96);border-top:1px solid var(--border);backdrop-filter:blur(12px);padding:10px 14px calc(10px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px;z-index:20}
 .barinfo{display:flex;align-items:center;gap:10px}
 .cover{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--ac),var(--ac2));flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:17px;animation:spin 12s linear infinite;animation-play-state:paused}
 .cover.on{animation-play-state:running}
@@ -48,20 +46,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;backg
 .barname{flex:1;min-width:0}
 .barname .t{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .barname .s{font-size:11px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.via{font-size:10px;color:var(--ac2)}
 .vol{width:64px;height:3px;accent-color:var(--ac2);cursor:pointer;flex-shrink:0}
 .prog{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--mut)}
 .prog input[type=range]{flex:1;height:3px;accent-color:var(--ac);cursor:pointer;min-width:0}
 .ctl{display:flex;align-items:center;justify-content:center;gap:26px}
 .ctl button{background:none;border:none;color:var(--tx);cursor:pointer;font-size:22px;padding:4px 8px}
-.ctl button:active{transform:scale(.88)}
 .msg{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.88);color:#fff;padding:11px 20px;border-radius:10px;font-size:14px;z-index:99;display:none;max-width:80%;text-align:center}
 </style>
 </head>
 <body>
-
 <div class="top">
   <div class="r1">
-    <div class="logo">🎵<span class="txt">greenfir</span></div>
+    <div class="logo">🎵 greenfir</div>
     <form class="sbox" onsubmit="doSearch();return false;">
       <input id="kw" type="search" placeholder="搜歌名 / 歌手" enterkeyhint="search" autocomplete="off">
       <button type="submit" class="sbtn">搜索</button>
@@ -70,86 +67,74 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;backg
   <div class="r2">
     <select id="source" onchange="onSrcChange()"></select>
     <select id="level"></select>
-    <button class="diag" onclick="runDiag()">自检</button>
+    <select id="core" title="切换核心版本"></select>
+    <button class="diag" type="button" onclick="runDiag()">自检</button>
   </div>
 </div>
-
-<div class="main" id="list">
-  <div class="hint">🎧 输入歌名或歌手，点「搜索」<br><span style="font-size:12px">点「自检」可看哪个音源当前能用</span></div>
-</div>
-
+<div class="main" id="list"><div class="hint">🎧 输入歌名或歌手，点「搜索」<br><span style="font-size:12px">顶部可切换「核心一代(签名)/核心二代(无签名)」</span></div></div>
 <div class="bar">
   <div class="barinfo">
     <div class="cover" id="cover">🎵</div>
-    <div class="barname"><div class="t" id="bt">未在播放</div><div class="s" id="bs">—</div></div>
+    <div class="barname"><div class="t" id="bt">未在播放</div><div class="s" id="bs">—</div><span class="via" id="bvia"></span></div>
     <input type="range" class="vol" id="vol" min="0" max="1" step="0.01" value="0.8" oninput="audio.volume=this.value">
   </div>
   <div class="prog"><span id="ct">0:00</span><input type="range" id="prog" min="0" max="100" value="0" oninput="seek()"><span id="dt">0:00</span></div>
-  <div class="ctl">
-    <button onclick="prev()">⏮</button>
-    <button onclick="toggle()" id="pb">▶️</button>
-    <button onclick="next()">⏭</button>
-  </div>
+  <div class="ctl"><button onclick="prev()">⏮</button><button onclick="toggle()" id="pb">▶️</button><button onclick="next()">⏭</button></div>
 </div>
-
 <div class="msg" id="msg"></div>
-<audio id="audio"></audio>
-
+<audio id="audio" crossorigin="anonymous"></audio>
 <script>
 const API='/api/music';
-const DEFAULT_LINES=[
-  {id:'kw',name:'小窝源',levels:['standard','exhigh','lossless']},
-  {id:'kg',name:'小狗源',levels:['standard','exhigh','lossless']},
-  {id:'wy',name:'小云源',levels:['standard','exhigh','lossless']},
-  {id:'tx',name:'小Q源',levels:['standard','exhigh','lossless']},
-  {id:'bili',name:'哔哩哔哩',levels:['bili192']},
-  {id:'mg',name:'小粉源',levels:['standard']}
+// ★ 核心版本选项（对应后端两代核心：v1=带签名，v2=无签名）
+const CORES=[
+  {id:'v1',name:'一代 · 签名版',cls:'v1'},
+  {id:'v2',name:'二代 · 无签名',cls:'v2'},
 ];
-const SRCNAME={kw:'小窝源(酷我)',kg:'小狗源(酷狗)',wy:'小云源(网易云)',tx:'小Q源(QQ音乐)',bili:'哔哩哔哩',mg:'小粉源(咪咕)'};
-const LVNAME={standard:'标准 128K',exhigh:'极高 192K',lossless:'无损 320K',hires:'Hi-Res',atmos:'Atmos全景声',atmos_plus:'Atmos+全景声',master:'Master母带',sky:'Sky',jyeffect:'臻品音效',jymaster:'臻品母带',clear:'清晰',bili192:'192K'};
-let LINES=DEFAULT_LINES, SONGS=[], cur=-1;
+const SOURCES=[
+  {id:'kw',name:'酷我',server:'kuwo',levels:['standard','exhigh','lossless']},
+  {id:'kg',name:'酷狗',server:'kugou',levels:['standard','exhigh','lossless']},
+  {id:'wy',name:'网易云',server:'netease',levels:['standard','exhigh','lossless']},
+  {id:'tx',name:'QQ音乐',server:'tencent',levels:['standard','exhigh','lossless']},
+  {id:'bili',name:'哔哩哔哩',server:'bili',levels:['bili192']},
+  {id:'bd',name:'百度',server:'baidu',levels:['standard']},
+];
+const LVNAME={standard:'标准 128K',exhigh:'极高 192K',lossless:'无损 320K',bili192:'192K'};
+let SONGS=[],cur=-1,currentVia='',currentCore='v1';
 const audio=document.getElementById('audio');
 const $=id=>document.getElementById(id);
-
 function toast(t){const m=$('msg');m.textContent=t;m.style.display='block';clearTimeout(m._t);m._t=setTimeout(()=>m.style.display='none',2400);}
 function esc(s){return String(s||'').replace(/[<>"]/g,c=>({'<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 
-async function loadCfg(){
-  try{
-    const r=await fetch(API+'?action=config').then(x=>x.json());
-    if(r.ok&&r.lines&&r.lines.length){LINES=r.lines;}
-  }catch(e){}
-  $('source').innerHTML=LINES.map(l=>`<option value="${l.id}">${l.name}</option>`).join('');
+function loadCfg(){
+  $('source').innerHTML=SOURCES.map(l=>`<option value="${l.id}">${l.name}</option>`).join('');
   onSrcChange();
+  $('core').innerHTML=CORES.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  // 记住上次选择
+  const saved=localStorage.getItem('greenfir_core')||'v1';
+  $('core').value=saved;currentCore=saved;
+  $('core').onchange=()=>{currentCore=$('core').value;localStorage.setItem('greenfir_core',currentCore);toast('已切换：'+($('core').selectedOptions[0].text));};
 }
 function onSrcChange(){
-  const l=LINES.find(x=>x.id===$('source').value)||LINES[0];
+  const l=SOURCES.find(x=>x.id===$('source').value)||SOURCES[0];
   const lvs=l.levels&&l.levels.length?l.levels:['standard'];
   $('level').innerHTML=lvs.map(v=>`<option value="${v}">${LVNAME[v]||v}</option>`).join('');
-  const si=lvs.indexOf('standard');
-  if(si>=0)$('level').selectedIndex=si;
+  if(lvs.indexOf('standard')>=0)$('level').selectedIndex=lvs.indexOf('standard');
 }
+
+// ★ 每个请求都带上 core=v1/v2，后端据此选择一代/二代逻辑
+function coreParam(){return `core=${encodeURIComponent(currentCore)}`;}
 
 async function runDiag(){
   const kw=$('kw').value.trim()||'起风了';
-  $('list').innerHTML='<div class="hint">自检中，约 15 秒...</div>';
+  $('list').innerHTML='<div class="hint">自检中，约 20 秒...</div>';
   try{
-    const j=await fetch(`${API}?action=test&keyword=${encodeURIComponent(kw)}`).then(x=>x.json());
-    if(!j.ok){$('list').innerHTML='<div class="hint">自检失败</div>';return;}
-    const agg=j.results.filter(r=>String(r.item).startsWith('聚合源'));
-    const srcs=j.results.filter(r=>r.source);
-    const aggHtml=agg.map(r=>`<div class="drow"><span>${esc(r.item)}</span><span>${r.url?'<span class="dok">✅ 可播</span>':'<span class="dno">❌</span>'} <small style="color:var(--mut)">${esc(r.note||'')}</small></span></div>`).join('');
-    const srcHtml=srcs.map(r=>`<div class="drow"><span>${SRCNAME[r.source]||r.source}</span><span>搜:${r.search?'<span class="dok">✅'+r.count+'条</span>':'<span class="dno">❌</span>'} 播:${r.url?'<span class="dok">✅</span>':'<span class="dno">❌</span>'} <small style="color:var(--mut)">${esc(r.note||'')}</small></span></div>`).join('');
-    const aliveAgg=agg.filter(r=>r.url).map(r=>r.item);
-    const aliveSrc=srcs.filter(r=>r.url).map(r=>SRCNAME[r.source]||r.source);
-    $('list').innerHTML=`<div class="diagbox">
-      <h3>🔗 第三方聚合源（取链用）</h3>${aggHtml||'<div class="hint" style="padding:8px">无</div>'}
-      <h3>🎵 各音源（搜索用）</h3>${srcHtml||'<div class="hint" style="padding:8px">无</div>'}
-      <div style="margin-top:12px;font-size:12px;line-height:1.8">
-        ${aliveAgg.length?'✅ 聚合源可用：'+aliveAgg.join('、'):'⚠️ 聚合源全挂 → 改 AGGREGATORS 数组'}<br>
-        ${aliveSrc.length?'🎵 可听的源：'+aliveSrc.join('、'):''}
-      </div></div>`;
-  }catch(e){$('list').innerHTML='<div class="hint">自检异常</div>';}
+    const j=await fetch(`${API}?action=test&keyword=${encodeURIComponent(kw)}&${coreParam()}`).then(x=>x.json());
+    if(!j.ok){$('list').innerHTML=`<div class="hint">自检接口异常</div>`;return;}
+    const fb=`<div class="feedback">本次自检使用：<b>${currentCore==='v1'?'一代 · 签名版':'二代 · 无签名'}</b>${j.core?` <span class="badge ${j.core}">${esc(j.core)}</span>`:''}<br>建议：${esc(j.tip||'')}</div>`;
+    const agg=(j.aggregators||[]).map(r=>`<div class="drow"><span>${esc(r.name)}</span><span>${r.ok?'<span class="dok">✅ '+esc(r.note||'')+'</span>':'<span class="dno">❌ '+esc(r.note||'')+'</span>'}</span></div>`).join('');
+    const srcs=(j.sources||[]).map(r=>`<div class="drow"><span>${esc(r.name)}</span><span>搜:${r.search?'<span class="dok">✅'+r.count+'条</span>':'<span class="dno">❌</span>'} 链:${r.url?'<span class="dok">✅</span>':'<span class="dno">❌</span>} <small style="color:var(--mut)">${esc(r.note||'')}</small></span></div>`).join('');
+    $('list').innerHTML=`<div class="diagbox">${fb}<h3>🔗 聚合层</h3>${agg||'<div class="hint" style="padding:8px">无</div>'}<h3>🎵 直连层</h3>${srcs||'<div class="hint" style="padding:8px">无</div>'}</div>`;
+  }catch(e){$('list').innerHTML='<div class="hint">自检失败</div>';}
 }
 
 async function doSearch(){
@@ -157,36 +142,34 @@ async function doSearch(){
   if(!kw){toast('请输入歌名或歌手');return;}
   const src=$('source').value;
   $('list').innerHTML='<div class="hint">搜索中...</div>';
-  $('list').scrollTop=0;
   try{
-    const j=await fetch(`${API}?action=search&keyword=${encodeURIComponent(kw)}&source=${src}&size=25`).then(x=>x.json());
-    if(!j.ok){$('list').innerHTML=`<div class="hint">❌ ${esc(j.msg||'搜索失败')}<br><span style="font-size:12px">点「自检」看哪个源能用</span></div>`;return;}
-    SONGS=j.list||[];cur=-1;
-    if(!SONGS.length){$('list').innerHTML=`<div class="hint">没有找到结果<br><span style="font-size:12px">${esc(j.msg||'换源或换关键词，或点「自检」')}</span></div>`;return;}
+    const j=await fetch(`${API}?action=search&keyword=${encodeURIComponent(kw)}&source=${src}&size=25&${coreParam()}`).then(x=>x.json());
+    if(!j.ok){$('list').innerHTML=`<div class="hint">❌ ${esc(j.msg||'搜索失败')}</div>`;return;}
+    SONGS=j.list||[];cur=-1;currentVia='';
+    if(!SONGS.length){$('list').innerHTML='<div class="hint">没有找到结果</div>';return;}
     render();
   }catch(e){$('list').innerHTML='<div class="hint">❌ 请求异常</div>';}
 }
-
 function render(){
   $('list').innerHTML=SONGS.map((s,i)=>`<div class="song${i===cur?' playing':''}" onclick="play(${i})">
     <div class="idx">${i===cur?'🎵':i+1}</div>
-    <div class="info"><div class="t">${esc(s.name)}</div><div class="s">${esc(s.artist||'未知歌手')}${s.album?' · '+esc(s.album):''}</div></div>
+    <div class="info"><div class="t">${esc(s.name)}</div><div class="s">${esc(s.artist||'未知')}${s.album?' · '+esc(s.album):''}</div></div>
     <div class="src">${esc(s.source)}</div></div>`).join('');
 }
-
 async function play(i){
   cur=i;const s=SONGS[i];render();
-  $('bt').textContent=s.name;$('bs').textContent=s.artist||'';
+  $('bt').textContent=s.name;$('bs').textContent=s.artist||'';$('bvia').textContent='';
   toast('获取播放链接...');
-  const lv=$('level').value;
+  const lv=$('level').value;const src=$('source').value;
   try{
-    const j=await fetch(`${API}?action=url&id=${encodeURIComponent(s.id)}&source=${s.source}&level=${encodeURIComponent(lv)}&album_id=${encodeURIComponent(s.album_id||'')}`).then(x=>x.json());
-    if(!j.ok){toast('❌ '+(j.msg||'无法获取播放链接'));return;}
-    audio.src=`${API}?action=proxy&url=${encodeURIComponent(j.url)}&source=${s.source}`;
+    const j=await fetch(`${API}?action=url&id=${encodeURIComponent(s.id)}&source=${src}&level=${encodeURIComponent(lv)}&album_id=${encodeURIComponent(s.album_id||'')}&${coreParam()}`).then(x=>x.json());
+    if(!j.ok||!j.url){toast('❌ '+(j.msg||'无法获取链接'));return;}
+    currentVia=j.via||'';
+    audio.src=`${API}?action=proxy&url=${encodeURIComponent(j.url)}&source=${src}&${coreParam()}`;
+    $('bvia').textContent=currentVia?`via ${currentVia} · ${currentCore}`:currentCore;
     await audio.play();
   }catch(e){toast('播放失败：'+(e.message||'未知'));}
 }
-
 function toggle(){
   if(audio.paused){if(audio.src&&audio.src!==location.href)audio.play();else if(cur>=0)play(cur);else if(SONGS.length)play(0);}
   else audio.pause();
@@ -195,14 +178,12 @@ audio.onplay=()=>{$('pb').textContent='⏸';$('cover').classList.add('on');$('ms
 audio.onpause=()=>{$('pb').textContent='▶️';$('cover').classList.remove('on');};
 audio.ontimeupdate=()=>{if(!audio.duration)return;$('prog').value=(audio.currentTime/audio.duration*100)||0;$('ct').textContent=fmt(audio.currentTime);$('dt').textContent=fmt(audio.duration);};
 audio.onended=()=>next();
-audio.onerror=()=>toast('音频加载失败，换首歌或换源');
+audio.onerror=()=>toast('音频加载失败，换首歌或换源/换核心');
 function seek(){if(audio.duration)audio.currentTime=audio.duration*($('prog').value/100);}
 function fmt(s){s=Math.floor(s||0);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');}
 function prev(){if(cur>0)play(cur-1);}
 function next(){if(cur<SONGS.length-1)play(cur+1);}
-
-loadCfg();
-audio.volume=0.8;
+loadCfg();audio.volume=0.8;
 </script>
 </body>
 </html>
