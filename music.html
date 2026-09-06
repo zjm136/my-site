@@ -21,6 +21,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;backg
 .sbtn:active{transform:scale(.95)}
 .r2{display:flex;gap:8px;margin-top:8px}
 .r2 select{flex:1;min-width:0;padding:8px 8px;border-radius:9px;border:1px solid var(--border);background:var(--card);color:var(--tx);font:inherit;font-size:13px}
+.diag{flex-shrink:0;margin-left:6px;padding:8px 10px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--mut);font:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
+.diag:active{transform:scale(.95)}
 .main{flex:1;overflow-y:auto;padding:12px 14px 150px;-webkit-overflow-scrolling:touch}
 .hint{text-align:center;color:var(--mut);font-size:13px;padding:36px 20px;line-height:1.9}
 .song{display:flex;align-items:center;gap:11px;padding:11px;border-radius:12px;cursor:pointer;transition:.15s}
@@ -31,6 +33,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;backg
 .song .t{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .song .s{font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px}
 .song .src{font-size:10px;padding:3px 7px;border-radius:5px;background:rgba(34,211,238,.15);color:var(--ac);flex-shrink:0}
+.diagbox{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;font-size:13px;line-height:1.9}
+.diagbox h3{font-size:13px;color:var(--ac);margin-bottom:8px}
+.drow{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.drow:last-child{border:none}
+.dok{color:#4ade80}
+.dno{color:#f87171}
 .bar{position:fixed;left:0;right:0;bottom:0;background:rgba(20,28,46,.97);border-top:1px solid var(--border);backdrop-filter:blur(12px);padding:10px 14px calc(10px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px;z-index:20}
 .barinfo{display:flex;align-items:center;gap:10px}
 .cover{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--ac),var(--ac2));flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:17px;animation:spin 12s linear infinite;animation-play-state:paused}
@@ -61,11 +69,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;backg
   <div class="r2">
     <select id="source" onchange="onSrcChange()"></select>
     <select id="level"></select>
+    <button class="diag" onclick="runDiag()">自检</button>
   </div>
 </div>
 
 <div class="main" id="list">
-  <div class="hint">🎧 输入歌名或歌手，点「搜索」<br><span style="font-size:12px">手机键盘按「搜索/前往」键也行</span></div>
+  <div class="hint">🎧 输入歌名或歌手，点「搜索」<br><span style="font-size:12px">点「自检」可看哪个音源当前能用</span></div>
 </div>
 
 <div class="bar">
@@ -95,6 +104,7 @@ const DEFAULT_LINES=[
   {id:'bili',name:'哔哩哔哩',levels:['bili192']},
   {id:'mg',name:'小粉源',levels:['standard']}
 ];
+const SRCNAME={kw:'小窝源(酷我)',kg:'小狗源(酷狗)',wy:'小云源(网易云)',tx:'小Q源(QQ音乐)',bili:'哔哩哔哩',mg:'小粉源(咪咕)'};
 const LVNAME={standard:'标准 128K',exhigh:'极高 192K',lossless:'无损 320K',hires:'Hi-Res',atmos:'Atmos全景声',atmos_plus:'Atmos+全景声',master:'Master母带',sky:'Sky',jyeffect:'臻品音效',jymaster:'臻品母带',clear:'清晰',bili192:'192K'};
 let LINES=DEFAULT_LINES, SONGS=[], cur=-1;
 const audio=document.getElementById('audio');
@@ -119,6 +129,26 @@ function onSrcChange(){
   if(si>=0)$('level').selectedIndex=si;
 }
 
+// 自检：看哪个源能搜、能取链
+async function runDiag(){
+  const kw=$('kw').value.trim()||'起风了';
+  $('list').innerHTML='<div class="hint">自检中，约需 10-20 秒...</div>';
+  try{
+    const j=await fetch(`${API}?action=test&keyword=${encodeURIComponent(kw)}`).then(x=>x.json());
+    if(!j.ok){$('list').innerHTML='<div class="hint">自检失败</div>';return;}
+    const rows=(j.results||[]).map(r=>{
+      const okS=r.search?'<span class="dok">✅'+r.count+'条</span>':'<span class="dno">❌</span>';
+      const okU=r.url?'<span class="dok">✅可播</span>':'<span class="dno">❌</span>';
+      return `<div class="drow"><span>${SRCNAME[r.source]||r.source}</span><span>搜:${okS} 播:${okU}</span></div>`;
+    }).join('');
+    const alive=(j.results||[]).filter(r=>r.url).map(r=>SRCNAME[r.source]||r.source);
+    $('list').innerHTML=`<div class="diagbox"><h3>🔍 自检结果（关键词：${esc(kw)}）</h3>${rows}
+      <div style="margin-top:10px;font-size:12px;color:var(--mut)">
+      ${alive.length?('✅ 当前可用：'+alive.join('、')+'<br>去左上角切到这几个源就能听'):'⚠️ 全部不可用，各平台风控中，稍后再试或换网络'}
+      </div></div>`;
+  }catch(e){$('list').innerHTML='<div class="hint">自检异常</div>';}
+}
+
 async function doSearch(){
   const kw=$('kw').value.trim();
   if(!kw){toast('请输入歌名或歌手');return;}
@@ -127,11 +157,11 @@ async function doSearch(){
   $('list').scrollTop=0;
   try{
     const j=await fetch(`${API}?action=search&keyword=${encodeURIComponent(kw)}&source=${src}&size=25`).then(x=>x.json());
-    if(!j.ok){$('list').innerHTML=`<div class="hint">❌ ${esc(j.msg||'搜索失败')}<br><span style="font-size:12px">换小窝源/小狗源试试</span></div>`;return;}
+    if(!j.ok){$('list').innerHTML=`<div class="hint">❌ ${esc(j.msg||'搜索失败')}<br><span style="font-size:12px">点「自检」看哪个源能用</span></div>`;return;}
     SONGS=j.list||[];cur=-1;
-    if(!SONGS.length){$('list').innerHTML='<div class="hint">没有找到结果<br><span style="font-size:12px">换个音源或换个关键词</span></div>';return;}
+    if(!SONGS.length){$('list').innerHTML=`<div class="hint">没有找到结果<br><span style="font-size:12px">${esc(j.msg||'换源或换关键词，或点「自检」')}</span></div>`;return;}
     render();
-  }catch(e){$('list').innerHTML='<div class="hint">❌ 请求异常，检查网络</div>';}
+  }catch(e){$('list').innerHTML='<div class="hint">❌ 请求异常</div>';}
 }
 
 function render(){
@@ -162,7 +192,7 @@ audio.onplay=()=>{$('pb').textContent='⏸';$('cover').classList.add('on');$('ms
 audio.onpause=()=>{$('pb').textContent='▶️';$('cover').classList.remove('on');};
 audio.ontimeupdate=()=>{if(!audio.duration)return;$('prog').value=(audio.currentTime/audio.duration*100)||0;$('ct').textContent=fmt(audio.currentTime);$('dt').textContent=fmt(audio.duration);};
 audio.onended=()=>next();
-audio.onerror=()=>toast('音频加载失败，换首歌或换音源');
+audio.onerror=()=>toast('音频加载失败，换首歌或换源');
 function seek(){if(audio.duration)audio.currentTime=audio.duration*($('prog').value/100);}
 function fmt(s){s=Math.floor(s||0);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');}
 function prev(){if(cur>0)play(cur-1);}
